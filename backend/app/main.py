@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from app.config import settings
 from app.ml.detector import MockPCBDefectDetector, PCBDefectDetector
+from app.routers import auth as auth_router
 
 detector = None
 
@@ -35,6 +36,9 @@ app.add_middleware(
 
 def get_detector():
     return detector
+
+
+app.include_router(auth_router.router)
 
 
 @app.get("/api/health")
