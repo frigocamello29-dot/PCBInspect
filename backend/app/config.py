@@ -20,6 +20,8 @@ class Settings(BaseSettings):
     DETECT_RATE_LIMIT: str = "10/minute"
     AUTH_RATE_LIMIT: str = "5/minute"
 
+    COOKIE_SECURE: bool = False
+
     class Config:
         env_file = ".env"
 

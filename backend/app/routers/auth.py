@@ -1,6 +1,7 @@
 from fastapi import APIRouter, Cookie, Depends, HTTPException, Response, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.config import settings
 from app.database import get_db
 from app.dependencies import get_current_user
 from app.models.user import User
@@ -20,7 +21,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str)
         key=_ACCESS_COOKIE,
         value=access_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite="strict",
         max_age=_ACCESS_MAX_AGE,
         path="/",
@@ -29,7 +30,7 @@ def _set_auth_cookies(response: Response, access_token: str, refresh_token: str)
         key=_REFRESH_COOKIE,
         value=refresh_token,
         httponly=True,
-        secure=True,
+        secure=settings.COOKIE_SECURE,
         samesite="strict",
         max_age=_REFRESH_MAX_AGE,
         path="/api/auth/refresh",
