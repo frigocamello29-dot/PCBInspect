@@ -1,7 +1,18 @@
-export default function DetectionDetailPage({ params }: { params: { id: string } }) {
+'use client';
+
+import { useParams } from 'next/navigation';
+import ProtectedLayout from '@/components/layout/protected-layout';
+
+export default function DetectionDetailPage() {
+  const { id } = useParams<{ id: string }>();
+
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold">Detection {params.id}</h1>
-    </main>
+    <ProtectedLayout>
+      <div style={{ padding: '32px 24px' }}>
+        <h1 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 22, color: 'var(--text-primary)' }}>
+          Detection {id}
+        </h1>
+      </div>
+    </ProtectedLayout>
   );
 }

@@ -1,8 +1,18 @@
+'use client';
+
+import ProtectedLayout from '@/components/layout/protected-layout';
+
 export default function DetectPage() {
   return (
-    <main className="min-h-screen p-8">
-      <h1 className="text-2xl font-bold">PCB Defect Detection</h1>
-      <p className="text-gray-500 mt-2">Upload a PCB image to detect defects.</p>
-    </main>
+    <ProtectedLayout>
+      <div style={{ padding: '32px 24px' }}>
+        <h1 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 22, color: 'var(--text-primary)' }}>
+          Detect defects
+        </h1>
+        <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6 }}>
+          Upload a PCB image to start analysis.
+        </p>
+      </div>
+    </ProtectedLayout>
   );
 }
