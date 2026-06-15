@@ -1,3 +1,5 @@
+from unittest.mock import AsyncMock, MagicMock
+
 import pytest
 import pytest_asyncio
 from httpx import ASGITransport, AsyncClient
@@ -35,9 +37,15 @@ async def client(db_session: AsyncSession):
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
-    # Ensure mock detector is loaded
+
     from app import main as app_main
     app_main.detector = MockPCBDefectDetector(conf_threshold=0.5)
+
+    mock_job = MagicMock()
+    mock_job.job_id = "test-job-id"
+    mock_arq = AsyncMock()
+    mock_arq.enqueue_job = AsyncMock(return_value=mock_job)
+    app.state.arq_pool = mock_arq
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as ac:
         yield ac
