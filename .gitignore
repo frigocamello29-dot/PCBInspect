@@ -29,7 +29,8 @@ backend/uploads/thumbnails/*
 # ML models (large binary)
 ml/models/*.onnx
 ml/models/*.pt
-
+#ML model export
+ml/utils/
 # Node
 frontend/node_modules/
 frontend/.next/
