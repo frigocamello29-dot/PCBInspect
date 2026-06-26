@@ -6,6 +6,7 @@ import { useAuthStore } from '@/store/auth-store';
 
 const NAV_LINKS = [
   { href: '/detect', label: 'Detect' },
+  { href: '/annotate', label: 'Annotate' },
   { href: '/detections', label: 'History' },
   { href: '/defect-types', label: 'Defect types' },
 ];

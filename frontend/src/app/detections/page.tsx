@@ -20,6 +20,7 @@ export default function DetectionsPage() {
 
   const [page, setPage] = useState(1);
   const [defectiveOnly, setDefectiveOnly] = useState(false);
+  const [source, setSource] = useState<'all' | 'ml' | 'manual'>('all');
   const [fromDate, setFromDate] = useState('');
   const [toDate, setToDate] = useState('');
 
@@ -29,6 +30,7 @@ export default function DetectionsPage() {
     try {
       const params = new URLSearchParams({ page: String(page), limit: '20' });
       if (defectiveOnly) params.set('defective_only', 'true');
+      if (source !== 'all') params.set('source', source);
       if (fromDate) params.set('from', fromDate);
       if (toDate) params.set('to', toDate);
       const res = await apiGet<DetectionListResponse>(`/api/detections?${params}`);
@@ -38,7 +40,7 @@ export default function DetectionsPage() {
     } finally {
       setLoading(false);
     }
-  }, [page, defectiveOnly, fromDate, toDate]);
+  }, [page, defectiveOnly, source, fromDate, toDate]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -70,6 +72,9 @@ export default function DetectionsPage() {
         }}>
           {filterPill('All', !defectiveOnly, () => { setDefectiveOnly(false); setPage(1); })}
           {filterPill('Defective only', defectiveOnly, () => { setDefectiveOnly(true); setPage(1); })}
+          <div style={{ width: '0.5px', height: 16, background: 'var(--bg-border)', margin: '0 4px' }} />
+          {filterPill('ML detected', source === 'ml', () => { setSource(s => s === 'ml' ? 'all' : 'ml'); setPage(1); })}
+          {filterPill('Annotated', source === 'manual', () => { setSource(s => s === 'manual' ? 'all' : 'manual'); setPage(1); })}
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 8 }}>
             <input
               type="date"
@@ -106,11 +111,11 @@ export default function DetectionsPage() {
         {loading && (
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(180px,1fr))', gap: 12 }}>
             {Array.from({ length: 8 }).map((_, i) => (
-              <div key={i} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)' }}>
-                <div style={{ paddingBottom: '56.25%', background: 'var(--bg-elevated)', animation: 'shimmer 1.5s infinite' }} />
+              <div key={i} style={{ borderRadius: 'var(--radius-lg)', overflow: 'hidden', background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)' }} aria-hidden="true">
+                <div className="shimmer" style={{ paddingBottom: '56.25%' }} />
                 <div style={{ padding: '10px 12px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  <div style={{ height: 20, width: 70, borderRadius: 4, background: 'var(--bg-elevated)' }} />
-                  <div style={{ height: 12, width: 90, borderRadius: 4, background: 'var(--bg-elevated)' }} />
+                  <div className="shimmer" style={{ height: 20, width: 70, borderRadius: 4 }} />
+                  <div className="shimmer" style={{ height: 12, width: 90, borderRadius: 4 }} />
                 </div>
               </div>
             ))}
@@ -124,10 +129,10 @@ export default function DetectionsPage() {
               <path d="M12 20h16M20 12v16" stroke="var(--text-dim)" strokeWidth="1.5"/>
             </svg>
             <p style={{ fontSize: 15, color: 'var(--text-secondary)', margin: 0 }}>
-              {defectiveOnly || fromDate || toDate ? 'No results for these filters' : 'No inspections yet'}
+              {defectiveOnly || fromDate || toDate || source !== 'all' ? 'No results for these filters' : 'No inspections yet'}
             </p>
-            {(defectiveOnly || fromDate || toDate) ? (
-              <button onClick={() => { setDefectiveOnly(false); setFromDate(''); setToDate(''); setPage(1); }}
+            {(defectiveOnly || fromDate || toDate || source !== 'all') ? (
+              <button onClick={() => { setDefectiveOnly(false); setFromDate(''); setToDate(''); setSource('all'); setPage(1); }}
                 style={{ fontSize: 13, color: 'var(--copper)', background: 'none', border: 'none', cursor: 'pointer' }}>
                 Clear filters
               </button>

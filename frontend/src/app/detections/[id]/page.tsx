@@ -73,6 +73,16 @@ export default function DetectionDetailPage() {
 
   return (
     <ProtectedLayout>
+      <style>{`
+        .detail-grid {
+          display: grid;
+          grid-template-columns: minmax(0,1fr) 380px;
+          gap: 24px;
+        }
+        @media (max-width: 767px) {
+          .detail-grid { grid-template-columns: 1fr; }
+        }
+      `}</style>
       <div style={{ padding: '24px', maxWidth: 1200, margin: '0 auto' }}>
         <Link href="/detections" style={{
           fontFamily: "'Inter', sans-serif", fontSize: 13, color: 'var(--text-secondary)',
@@ -83,11 +93,13 @@ export default function DetectionDetailPage() {
         >← History</Link>
 
         {loading && (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 380px', gap: 24 }}>
-            <div style={{ background: 'var(--bg-surface)', borderRadius: 'var(--radius-lg)', border: '0.5px solid var(--bg-border)', minHeight: 400 }} />
+          <div className="detail-grid" aria-hidden="true">
+            <div className="shimmer" style={{ borderRadius: 'var(--radius-lg)', minHeight: 400 }} />
             <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
-              {Array.from({ length: 5 }).map((_, i) => (
-                <div key={i} style={{ height: 40, borderRadius: 8, background: 'var(--bg-surface)' }} />
+              <div className="shimmer" style={{ height: 48, borderRadius: 'var(--radius-lg)' }} />
+              <div className="shimmer" style={{ height: 96, borderRadius: 'var(--radius-lg)' }} />
+              {Array.from({ length: 3 }).map((_, i) => (
+                <div key={i} className="shimmer" style={{ height: 80, borderRadius: 'var(--radius-lg)' }} />
               ))}
             </div>
           </div>
@@ -96,7 +108,7 @@ export default function DetectionDetailPage() {
         {error && <p style={{ color: 'var(--red-fail)', fontSize: 14 }}>{error}</p>}
 
         {det && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0,1fr) 380px', gap: 24 }}>
+          <div className="detail-grid">
             {/* image viewer */}
             <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 12px', borderBottom: '0.5px solid var(--bg-border)', gap: 6 }}>

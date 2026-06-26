@@ -59,9 +59,22 @@ export default function DetectionCard({ d }: { d: DetectionSummary }) {
             borderRadius: 'var(--radius-sm)',
             alignSelf: 'flex-start',
           }}>{label}</span>
-          <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'var(--text-dim)' }}>
-            {dateStr}, {timeStr}
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+            <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 11, color: 'var(--text-dim)' }}>
+              {dateStr}, {timeStr}
+            </span>
+            {d.model_version === 'manual' && (
+              <span style={{
+                fontFamily: "'JetBrains Mono', monospace",
+                fontSize: 10, fontWeight: 600,
+                letterSpacing: '0.05em',
+                color: '#A78BFA',
+                background: 'rgba(167,139,250,0.12)',
+                padding: '1px 5px',
+                borderRadius: 'var(--radius-sm)',
+              }}>MANUAL</span>
+            )}
+          </div>
         </div>
       </div>
     </Link>

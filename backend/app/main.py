@@ -13,7 +13,9 @@ from slowapi.middleware import SlowAPIMiddleware
 from app.config import settings
 from app.limiter import limiter
 from app.ml.detector import MockPCBDefectDetector, PCBDefectDetector
+from app.routers import annotate as annotate_router
 from app.routers import auth as auth_router
+from app.routers import defect_types as defect_types_router
 from app.routers import detect as detect_router
 from app.routers import detections as detections_router
 from seeds.defect_types import seed as seed_defect_types
@@ -72,8 +74,10 @@ def get_detector():
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 app.include_router(auth_router.router)
+app.include_router(defect_types_router.router)
 app.include_router(detect_router.router)
 app.include_router(detections_router.router)
+app.include_router(annotate_router.router)
 
 
 @app.get("/api/health")

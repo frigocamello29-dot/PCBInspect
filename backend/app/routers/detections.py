@@ -51,6 +51,7 @@ async def list_detections(
     page: int = Query(1, ge=1),
     limit: int = Query(20, ge=1, le=100),
     defective_only: bool = Query(False),
+    source: str | None = Query(None),  # "ml" | "manual"
     from_date: date | None = Query(None, alias="from"),
     to_date: date | None = Query(None, alias="to"),
     db: AsyncSession = Depends(get_db),
@@ -60,6 +61,10 @@ async def list_detections(
 
     if defective_only:
         query = query.where(Detection.is_defective.is_(True))
+    if source == "manual":
+        query = query.where(Detection.model_version == "manual")
+    elif source == "ml":
+        query = query.where(Detection.model_version != "manual")
     if from_date:
         query = query.where(func.date(Detection.created_at) >= from_date)
     if to_date:

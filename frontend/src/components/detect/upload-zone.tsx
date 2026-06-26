@@ -1,6 +1,6 @@
 'use client';
 
-import { useRef, useState, DragEvent } from 'react';
+import { useRef, useState, DragEvent, useEffect } from 'react';
 
 interface UploadZoneProps {
   file: File | null;
@@ -18,7 +18,16 @@ function formatBytes(b: number): string {
 
 export default function UploadZone({ file, previewUrl, disabled, onFile, onClear, onCameraOpen }: UploadZoneProps) {
   const [dragging, setDragging] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 639px)');
+    setIsMobile(mq.matches);
+    const handler = (e: MediaQueryListEvent) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
 
   function handleDragOver(e: DragEvent) {
     e.preventDefault();
@@ -40,6 +49,8 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
 
   return (
     <div
+      role="region"
+      aria-label="PCB image upload area"
       onDragOver={handleDragOver}
       onDragLeave={handleDragLeave}
       onDrop={handleDrop}
@@ -84,6 +95,7 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
             <button
               onClick={onClear}
               disabled={disabled}
+              aria-label="Clear selected file"
               style={{
                 background: 'transparent', color: 'var(--text-secondary)',
                 border: '0.5px solid var(--bg-border)',
@@ -104,7 +116,7 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
           alignItems: 'center', justifyContent: 'center',
           padding: 32, gap: 12, textAlign: 'center',
         }}>
-          <svg width="48" height="48" viewBox="0 0 48 48" fill="none">
+          <svg width="48" height="48" viewBox="0 0 48 48" fill="none" aria-hidden="true">
             <rect x="8" y="8" width="32" height="32" rx="4" stroke="var(--text-dim)" strokeWidth="1.5"/>
             <rect x="16" y="16" width="16" height="16" rx="2" stroke="var(--text-dim)" strokeWidth="1.5"/>
             <line x1="8" y1="20" x2="4" y2="20" stroke="var(--text-dim)" strokeWidth="1.5"/>
@@ -122,31 +134,55 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
           <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0 }}>
             JPG, PNG, WEBP up to 10MB
           </p>
-          <div style={{ display: 'flex', gap: 8, marginTop: 8 }}>
+          <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 8, marginTop: 8, width: isMobile ? '100%' : 'auto' }}>
             <input
               ref={inputRef}
+              id="pcb-file-input"
               type="file"
               accept="image/jpeg,image/png,image/webp"
+              aria-label="Upload PCB image"
               style={{ display: 'none' }}
               onChange={handleInputChange}
             />
+            {/* On mobile: camera first per factory floor use case */}
+            {isMobile && (
+              <button
+                onClick={() => !disabled && onCameraOpen()}
+                disabled={disabled}
+                aria-label="Use camera to capture PCB"
+                style={{
+                  background: 'var(--copper)', color: '#0D0F0E',
+                  border: 'none', borderRadius: 'var(--radius-md)',
+                  padding: '12px 20px', fontSize: 14, fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif", cursor: disabled ? 'not-allowed' : 'pointer',
+                  width: '100%',
+                }}
+              >
+                Use camera
+              </button>
+            )}
             <button
               onClick={() => !disabled && inputRef.current?.click()}
               disabled={disabled}
+              aria-label="Browse files to upload"
               style={{
-                background: 'var(--copper)', color: '#0D0F0E',
-                border: 'none', borderRadius: 'var(--radius-md)',
+                background: isMobile ? 'transparent' : 'var(--copper)',
+                color: isMobile ? 'var(--text-secondary)' : '#0D0F0E',
+                border: isMobile ? '0.5px solid var(--bg-border)' : 'none',
+                borderRadius: 'var(--radius-md)',
                 padding: '10px 20px', fontSize: 14, fontWeight: 500,
                 fontFamily: "'Inter', sans-serif", cursor: disabled ? 'not-allowed' : 'pointer',
+                width: isMobile ? '100%' : 'auto',
               }}
-              onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = 'var(--copper-muted)'; }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--copper)'; }}
+              onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = isMobile ? 'var(--bg-elevated)' : 'var(--copper-muted)'; }}
+              onMouseLeave={e => { e.currentTarget.style.background = isMobile ? 'transparent' : 'var(--copper)'; }}
             >
               Browse files
             </button>
-            <button
+            {!isMobile && <button
               onClick={() => !disabled && onCameraOpen()}
               disabled={disabled}
+              aria-label="Use camera to capture PCB"
               style={{
                 background: 'transparent', color: 'var(--text-secondary)',
                 border: '0.5px solid var(--bg-border)',
@@ -158,7 +194,7 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
               onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
             >
               Use camera
-            </button>
+            </button>}
           </div>
         </div>
       )}
