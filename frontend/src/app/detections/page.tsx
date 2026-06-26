@@ -5,6 +5,7 @@ import ProtectedLayout from '@/components/layout/protected-layout';
 import DetectionCard from '@/components/detections/detection-card';
 import { DetectionSummary } from '@/lib/poll';
 import { apiGet } from '@/lib/api';
+import { useT } from '@/hooks/use-t';
 
 interface DetectionListResponse {
   items: DetectionSummary[];
@@ -14,6 +15,7 @@ interface DetectionListResponse {
 }
 
 export default function DetectionsPage() {
+  const t = useT();
   const [data, setData] = useState<DetectionListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -36,11 +38,11 @@ export default function DetectionsPage() {
       const res = await apiGet<DetectionListResponse>(`/api/detections?${params}`);
       setData(res);
     } catch {
-      setError('Failed to load detections.');
+      setError(t.detections_error);
     } finally {
       setLoading(false);
     }
-  }, [page, defectiveOnly, source, fromDate, toDate]);
+  }, [page, defectiveOnly, source, fromDate, toDate, t]);
 
   useEffect(() => { load(); }, [load]);
 
@@ -70,18 +72,17 @@ export default function DetectionsPage() {
           display: 'flex', gap: 8, alignItems: 'center', flexWrap: 'wrap',
           borderBottom: '0.5px solid var(--bg-border)',
         }}>
-          {filterPill('All', !defectiveOnly, () => { setDefectiveOnly(false); setPage(1); })}
-          {filterPill('Defective only', defectiveOnly, () => { setDefectiveOnly(true); setPage(1); })}
+          {filterPill(t.filter_all, !defectiveOnly, () => { setDefectiveOnly(false); setPage(1); })}
+          {filterPill(t.filter_defective, defectiveOnly, () => { setDefectiveOnly(true); setPage(1); })}
           <div style={{ width: '0.5px', height: 16, background: 'var(--bg-border)', margin: '0 4px' }} />
-          {filterPill('ML detected', source === 'ml', () => { setSource(s => s === 'ml' ? 'all' : 'ml'); setPage(1); })}
-          {filterPill('Annotated', source === 'manual', () => { setSource(s => s === 'manual' ? 'all' : 'manual'); setPage(1); })}
+          {filterPill(t.filter_ml, source === 'ml', () => { setSource(s => s === 'ml' ? 'all' : 'ml'); setPage(1); })}
+          {filterPill(t.filter_annotated, source === 'manual', () => { setSource(s => s === 'manual' ? 'all' : 'manual'); setPage(1); })}
           <div style={{ display: 'flex', gap: 6, alignItems: 'center', marginLeft: 8 }}>
             <input
               type="date"
               value={fromDate}
               onChange={e => { setFromDate(e.target.value); setPage(1); }}
               style={dateInputStyle}
-              placeholder="From"
             />
             <span style={{ color: 'var(--text-dim)', fontSize: 12 }}>—</span>
             <input
@@ -89,17 +90,16 @@ export default function DetectionsPage() {
               value={toDate}
               onChange={e => { setToDate(e.target.value); setPage(1); }}
               style={dateInputStyle}
-              placeholder="To"
             />
             {(fromDate || toDate) && (
               <button onClick={() => { setFromDate(''); setToDate(''); setPage(1); }} style={{
                 background: 'none', border: 'none', color: 'var(--text-dim)', cursor: 'pointer', fontSize: 12,
-              }}>Clear</button>
+              }}>{t.filter_clear}</button>
             )}
           </div>
           {data && (
             <span style={{ marginLeft: 'auto', fontSize: 13, color: 'var(--text-dim)' }}>
-              {data.total} detection{data.total !== 1 ? 's' : ''}
+              {t.detections_count(data.total)}
             </span>
           )}
         </div>
@@ -129,15 +129,15 @@ export default function DetectionsPage() {
               <path d="M12 20h16M20 12v16" stroke="var(--text-dim)" strokeWidth="1.5"/>
             </svg>
             <p style={{ fontSize: 15, color: 'var(--text-secondary)', margin: 0 }}>
-              {defectiveOnly || fromDate || toDate || source !== 'all' ? 'No results for these filters' : 'No inspections yet'}
+              {defectiveOnly || fromDate || toDate || source !== 'all' ? t.no_results_filters : t.no_inspections}
             </p>
             {(defectiveOnly || fromDate || toDate || source !== 'all') ? (
               <button onClick={() => { setDefectiveOnly(false); setFromDate(''); setToDate(''); setSource('all'); setPage(1); }}
                 style={{ fontSize: 13, color: 'var(--copper)', background: 'none', border: 'none', cursor: 'pointer' }}>
-                Clear filters
+                {t.clear_filters}
               </button>
             ) : (
-              <a href="/detect" style={{ fontSize: 13, color: 'var(--copper)', textDecoration: 'none' }}>Inspect an image →</a>
+              <a href="/detect" style={{ fontSize: 13, color: 'var(--copper)', textDecoration: 'none' }}>{t.inspect_link}</a>
             )}
           </div>
         )}
@@ -154,7 +154,7 @@ export default function DetectionsPage() {
                   onClick={() => setPage(p => Math.max(1, p - 1))}
                   disabled={page === 1}
                   style={pageBtn(false, page === 1)}
-                >&lt; Prev</button>
+                >{t.page_prev}</button>
                 {Array.from({ length: data.pages }, (_, i) => i + 1)
                   .filter(p => Math.abs(p - page) <= 2 || p === 1 || p === data.pages)
                   .reduce<(number | '...')[]>((acc, p, i, arr) => {
@@ -175,7 +175,7 @@ export default function DetectionsPage() {
                   onClick={() => setPage(p => Math.min(data.pages, p + 1))}
                   disabled={page === data.pages}
                   style={pageBtn(false, page === data.pages)}
-                >Next &gt;</button>
+                >{t.page_next}</button>
               </div>
             )}
           </>

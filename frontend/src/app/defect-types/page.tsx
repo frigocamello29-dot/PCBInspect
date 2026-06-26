@@ -4,11 +4,13 @@ import { useState, useEffect } from 'react';
 import ProtectedLayout from '@/components/layout/protected-layout';
 import DefectCard, { DefectType } from '@/components/defects/defect-card';
 import { apiGet } from '@/lib/api';
+import { useT } from '@/hooks/use-t';
 
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 function ExampleModal({ defect, onClose }: { defect: DefectType; onClose: () => void }) {
-  // close on Escape
+  const t = useT();
+
   useEffect(() => {
     function handler(e: KeyboardEvent) {
       if (e.key === 'Escape') onClose();
@@ -21,7 +23,7 @@ function ExampleModal({ defect, onClose }: { defect: DefectType; onClose: () => 
     ? defect.example_image_url.startsWith('http')
       ? defect.example_image_url
       : `${API_BASE}/${defect.example_image_url.replace(/^\//, '')}`
-    : null;
+    : `/defect-examples/defect-example-${defect.id}.jpg`;
 
   return (
     <div
@@ -56,12 +58,12 @@ function ExampleModal({ defect, onClose }: { defect: DefectType; onClose: () => 
               fontFamily: "'JetBrains Mono', monospace",
               fontWeight: 500, fontSize: 15,
               color: 'var(--text-primary)',
-            }}>{defect.name}</span>
+            }}>{t.defect_name(defect.id, defect.name)}</span>
             <span style={{
               fontSize: 12, color: 'var(--text-dim)',
               fontFamily: "'JetBrains Mono', monospace",
               marginLeft: 10,
-            }}>defect class {defect.id}</span>
+            }}>{t.defect_class(defect.id)}</span>
           </div>
           <button
             onClick={onClose}
@@ -99,7 +101,7 @@ function ExampleModal({ defect, onClose }: { defect: DefectType; onClose: () => 
                 <circle cx="18" cy="18" r="5" stroke="var(--text-dim)" strokeWidth="1.5"/>
                 <path d="M6 32 L16 22 L24 30 L32 20 L42 32" stroke="var(--text-dim)" strokeWidth="1.5"/>
               </svg>
-              <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: 0 }}>No example image available</p>
+              <p style={{ color: 'var(--text-dim)', fontSize: 13, margin: 0 }}>{t.no_example_image}</p>
             </div>
           )}
         </div>
@@ -145,6 +147,7 @@ function SkeletonCard() {
 }
 
 export default function DefectTypesPage() {
+  const t = useT();
   const [defects, setDefects] = useState<DefectType[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -153,8 +156,9 @@ export default function DefectTypesPage() {
   useEffect(() => {
     apiGet<DefectType[]>('/api/defect-types')
       .then(setDefects)
-      .catch(() => setError('Failed to load defect types.'))
+      .catch(() => setError(t.defect_types_error))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -183,10 +187,10 @@ export default function DefectTypesPage() {
           fontSize: 22, fontWeight: 500,
           color: 'var(--text-primary)', margin: 0,
         }}>
-          PCB Defect Reference
+          {t.defect_ref_title}
         </h1>
         <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6, marginBottom: 32 }}>
-          6 standard defect classes
+          {t.defect_ref_sub}
         </p>
 
         {error && (

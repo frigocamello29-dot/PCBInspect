@@ -7,6 +7,7 @@ import ProtectedLayout from '@/components/layout/protected-layout';
 import BboxCanvas from '@/components/detect/bbox-canvas';
 import { DetectionSummary, Finding, serverImageUrl, DEFECT_COLORS } from '@/lib/poll';
 import { apiGet, apiDelete } from '@/lib/api';
+import { useT } from '@/hooks/use-t';
 
 interface DetectionDetail {
   detection: DetectionSummary;
@@ -21,12 +22,13 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 function StatusBadge({ d }: { d: DetectionSummary }) {
+  const t = useT();
   let label = d.status.toUpperCase();
   let color = '#8A9189';
   let bg = 'rgba(138,145,137,0.12)';
   if (d.status === 'completed') {
-    if (!d.is_defective) { label = 'PASS'; color = '#22C55E'; bg = 'rgba(34,197,94,0.12)'; }
-    else { label = `${d.defect_count} DEFECT${d.defect_count !== 1 ? 'S' : ''}`; color = '#EF4444'; bg = 'rgba(239,68,68,0.12)'; }
+    if (!d.is_defective) { label = t.badge_pass; color = '#22C55E'; bg = 'rgba(34,197,94,0.12)'; }
+    else { label = t.badge_defect_count(d.defect_count); color = '#EF4444'; bg = 'rgba(239,68,68,0.12)'; }
   }
   return (
     <span style={{
@@ -40,6 +42,7 @@ function StatusBadge({ d }: { d: DetectionSummary }) {
 export default function DetectionDetailPage() {
   const { id } = useParams<{ id: string }>();
   const router = useRouter();
+  const t = useT();
 
   const [data, setData] = useState<DetectionDetail | null>(null);
   const [loading, setLoading] = useState(true);
@@ -52,8 +55,9 @@ export default function DetectionDetailPage() {
   useEffect(() => {
     apiGet<DetectionDetail>(`/api/detections/${id}`)
       .then(setData)
-      .catch(() => setError('Detection not found.'))
+      .catch(() => setError(t.not_found))
       .finally(() => setLoading(false));
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [id]);
 
   const handleDelete = async () => {
@@ -64,7 +68,7 @@ export default function DetectionDetailPage() {
     } catch {
       setDeleting(false);
       setShowDeleteDialog(false);
-      setError('Failed to delete.');
+      setError(t.delete_error);
     }
   };
 
@@ -90,7 +94,7 @@ export default function DetectionDetailPage() {
         }}
           onMouseEnter={e => (e.currentTarget.style.color = 'var(--copper)')}
           onMouseLeave={e => (e.currentTarget.style.color = 'var(--text-secondary)')}
-        >← History</Link>
+        >{t.back_history}</Link>
 
         {loading && (
           <div className="detail-grid" aria-hidden="true">
@@ -112,15 +116,18 @@ export default function DetectionDetailPage() {
             {/* image viewer */}
             <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 12px', borderBottom: '0.5px solid var(--bg-border)', gap: 6 }}>
-                {['Original', 'Annotated'].map(v => (
-                  <button key={v} onClick={() => setShowOverlay(v === 'Annotated')} style={{
-                    fontFamily: "'JetBrains Mono', monospace", fontSize: 11, padding: '4px 10px',
-                    borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--bg-border)',
-                    background: (v === 'Annotated') === showOverlay ? 'rgba(200,121,65,0.12)' : 'transparent',
-                    color: (v === 'Annotated') === showOverlay ? 'var(--copper)' : 'var(--text-secondary)',
-                    cursor: 'pointer',
-                  }}>{v}</button>
-                ))}
+                {[t.view_original, t.view_annotated].map((v, i) => {
+                  const isAnnotated = i === 1;
+                  return (
+                    <button key={v} onClick={() => setShowOverlay(isAnnotated)} style={{
+                      fontFamily: "'JetBrains Mono', monospace", fontSize: 11, padding: '4px 10px',
+                      borderRadius: 'var(--radius-sm)', border: '0.5px solid var(--bg-border)',
+                      background: isAnnotated === showOverlay ? 'rgba(200,121,65,0.12)' : 'transparent',
+                      color: isAnnotated === showOverlay ? 'var(--copper)' : 'var(--text-secondary)',
+                      cursor: 'pointer',
+                    }}>{v}</button>
+                  );
+                })}
               </div>
               <div style={{ padding: 16 }}>
                 {det.image_path && (
@@ -141,16 +148,16 @@ export default function DetectionDetailPage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 16 }}>
                   <StatusBadge d={det} />
                   <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 12, color: 'var(--text-dim)' }}>
-                    {new Date(det.created_at).toLocaleString()}
+                    {new Date(det.created_at).toLocaleString(t.date_locale)}
                   </span>
                 </div>
 
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '8px 16px', marginBottom: 16 }}>
                   {[
-                    ['Model', det.model_version ?? '—'],
-                    ['Inference', det.inference_time_ms != null ? `${det.inference_time_ms}ms` : '—'],
-                    ['Defects', String(det.defect_count)],
-                    ['Status', det.status],
+                    [t.meta_model, det.model_version ?? '—'],
+                    [t.meta_inference, det.inference_time_ms != null ? `${det.inference_time_ms}ms` : '—'],
+                    [t.meta_defects, String(det.defect_count)],
+                    [t.meta_status, det.status],
                   ].map(([k, v]) => (
                     <div key={k}>
                       <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: "'JetBrains Mono', monospace", marginBottom: 2 }}>{k}</div>
@@ -170,7 +177,7 @@ export default function DetectionDetailPage() {
               {findings.length > 0 && (
                 <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)', borderRadius: 'var(--radius-lg)', padding: 16 }}>
                   <p style={{ fontSize: 12, color: 'var(--text-dim)', fontFamily: "'JetBrains Mono', monospace", margin: '0 0 12px', letterSpacing: '0.05em' }}>
-                    FINDINGS
+                    {t.findings_title}
                   </p>
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                     {findings.map(f => {
@@ -194,9 +201,9 @@ export default function DetectionDetailPage() {
                           }}
                         >
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{f.defect_type.name}</span>
+                            <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)' }}>{t.defect_name(f.defect_type.id, f.defect_type.name)}</span>
                             <span style={{ fontSize: 11, fontFamily: "'JetBrains Mono', monospace", color: sevClr, background: `${sevClr}18`, padding: '2px 6px', borderRadius: 4 }}>
-                              {f.defect_type.severity}
+                              {t.severity_label(f.defect_type.severity)}
                             </span>
                           </div>
                           <div style={{ marginBottom: 6 }}>
@@ -204,7 +211,7 @@ export default function DetectionDetailPage() {
                               <div style={{ width: `${Math.round(f.confidence * 100)}%`, height: '100%', background: clr, borderRadius: 2 }} />
                             </div>
                             <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: "'JetBrains Mono', monospace" }}>
-                              {Math.round(f.confidence * 100)}% confidence
+                              {Math.round(f.confidence * 100)}% {t.confidence_label}
                             </span>
                           </div>
                           <div style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: "'JetBrains Mono', monospace" }}>
@@ -229,7 +236,7 @@ export default function DetectionDetailPage() {
                     borderRadius: 'var(--radius-md)', textDecoration: 'none',
                     border: 'none', cursor: 'pointer',
                   }}
-                >Download image</a>
+                >{t.download_image}</a>
                 <button
                   onClick={() => setShowDeleteDialog(true)}
                   style={{
@@ -241,7 +248,7 @@ export default function DetectionDetailPage() {
                   }}
                   onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
                   onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >Delete</button>
+                >{t.delete_button}</button>
               </div>
             </div>
           </div>
@@ -259,10 +266,10 @@ export default function DetectionDetailPage() {
               padding: 28, boxShadow: '0 8px 32px rgba(0,0,0,0.5)',
             }}>
               <h2 style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 18, color: 'var(--text-primary)', margin: '0 0 8px' }}>
-                Delete this detection?
+                {t.delete_dialog_title}
               </h2>
               <p style={{ fontSize: 14, color: 'var(--text-secondary)', margin: '0 0 24px' }}>
-                Can&apos;t be undone. The image and all findings will be permanently removed.
+                {t.delete_dialog_body}
               </p>
               <div style={{ display: 'flex', gap: 10 }}>
                 <button
@@ -273,7 +280,7 @@ export default function DetectionDetailPage() {
                     color: 'var(--text-secondary)', border: '0.5px solid var(--bg-border)',
                     borderRadius: 'var(--radius-md)', cursor: 'pointer', fontSize: 14,
                   }}
-                >Cancel</button>
+                >{t.cancel}</button>
                 <button
                   onClick={handleDelete}
                   disabled={deleting}
@@ -283,7 +290,7 @@ export default function DetectionDetailPage() {
                     borderRadius: 'var(--radius-md)', cursor: deleting ? 'not-allowed' : 'pointer', fontSize: 14,
                     opacity: deleting ? 0.6 : 1,
                   }}
-                >{deleting ? 'Deleting…' : 'Delete'}</button>
+                >{deleting ? t.deleting : t.delete_button}</button>
               </div>
             </div>
           </div>

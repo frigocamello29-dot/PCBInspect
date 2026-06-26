@@ -6,6 +6,8 @@ import { useRouter } from 'next/navigation';
 import { apiPost, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/auth-store';
 import { User } from '@/lib/auth';
+import { useT } from '@/hooks/use-t';
+import LangSwitcher from '@/components/layout/lang-switcher';
 
 const inputStyle: React.CSSProperties = {
   width: '100%',
@@ -37,6 +39,7 @@ function focusOut(e: React.FocusEvent<HTMLInputElement>) {
 export default function RegisterPage() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
+  const t = useT();
 
   const [fullName, setFullName] = useState('');
   const [email, setEmail] = useState('');
@@ -50,11 +53,11 @@ export default function RegisterPage() {
     setError('');
 
     if (password !== confirm) {
-      setError('Passwords do not match.');
+      setError(t.register_error_mismatch);
       return;
     }
     if (password.length < 8) {
-      setError('Password must be at least 8 characters.');
+      setError(t.register_error_short);
       return;
     }
 
@@ -69,11 +72,11 @@ export default function RegisterPage() {
       router.replace('/detect');
     } catch (err) {
       if (err instanceof ApiError && err.status === 409) {
-        setError('An account with this email already exists.');
+        setError(t.register_error_exists);
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Registration failed. Try again.');
+        setError(t.register_error_generic);
       }
     } finally {
       setLoading(false);
@@ -83,8 +86,12 @@ export default function RegisterPage() {
   return (
     <main
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'var(--bg-base)' }}
+      style={{ background: 'var(--bg-base)', position: 'relative' }}
     >
+      <div style={{ position: 'absolute', top: 16, right: 24 }}>
+        <LangSwitcher />
+      </div>
+
       <div
         className="w-full"
         style={{
@@ -108,13 +115,13 @@ export default function RegisterPage() {
             PCB INSPECT
           </span>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6 }}>
-            Create your account
+            {t.register_tagline}
           </p>
         </div>
 
         <form onSubmit={handleSubmit} noValidate>
           <div className="mb-4">
-            <label htmlFor="full_name" style={labelStyle}>Full name</label>
+            <label htmlFor="full_name" style={labelStyle}>{t.register_full_name}</label>
             <input
               id="full_name"
               type="text"
@@ -130,7 +137,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="email" style={labelStyle}>Email</label>
+            <label htmlFor="email" style={labelStyle}>{t.register_email}</label>
             <input
               id="email"
               type="email"
@@ -146,7 +153,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="mb-4">
-            <label htmlFor="password" style={labelStyle}>Password</label>
+            <label htmlFor="password" style={labelStyle}>{t.register_password}</label>
             <input
               id="password"
               type="password"
@@ -154,7 +161,7 @@ export default function RegisterPage() {
               required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              placeholder="Min. 8 characters"
+              placeholder={t.register_placeholder_password}
               style={inputStyle}
               onFocus={focusIn}
               onBlur={focusOut}
@@ -162,7 +169,7 @@ export default function RegisterPage() {
           </div>
 
           <div className="mb-6">
-            <label htmlFor="confirm" style={labelStyle}>Confirm password</label>
+            <label htmlFor="confirm" style={labelStyle}>{t.register_confirm}</label>
             <input
               id="confirm"
               type="password"
@@ -212,17 +219,17 @@ export default function RegisterPage() {
             onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = 'var(--copper-muted)'; }}
             onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = 'var(--copper)'; }}
           >
-            {loading ? 'Creating account…' : 'Create account'}
+            {loading ? t.register_loading : t.register_submit}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-secondary)' }}>
-          Already have an account?{' '}
+          {t.register_have_account}{' '}
           <Link
             href="/login"
             style={{ color: 'var(--copper)', textDecoration: 'none', fontWeight: 500 }}
           >
-            Sign in
+            {t.register_sign_in}
           </Link>
         </p>
       </div>

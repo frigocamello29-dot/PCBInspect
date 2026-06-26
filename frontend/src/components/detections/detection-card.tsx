@@ -2,20 +2,23 @@
 
 import Link from 'next/link';
 import { DetectionSummary, serverImageUrl } from '@/lib/poll';
-
-function badge(d: DetectionSummary) {
-  if (d.status !== 'completed') return { label: d.status.toUpperCase(), color: '#8A9189', bg: 'rgba(138,145,137,0.12)' };
-  if (!d.is_defective) return { label: 'PASS', color: '#22C55E', bg: 'rgba(34,197,94,0.12)' };
-  if (d.defect_count >= 3) return { label: `${d.defect_count} DEFECTS`, color: '#EF4444', bg: 'rgba(239,68,68,0.12)' };
-  return { label: `${d.defect_count} DEFECT${d.defect_count > 1 ? 'S' : ''}`, color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' };
-}
+import { useT } from '@/hooks/use-t';
 
 export default function DetectionCard({ d }: { d: DetectionSummary }) {
-  const { label, color, bg } = badge(d);
+  const t = useT();
+
+  function badge() {
+    if (d.status !== 'completed') return { label: d.status.toUpperCase(), color: '#8A9189', bg: 'rgba(138,145,137,0.12)' };
+    if (!d.is_defective) return { label: t.badge_pass, color: '#22C55E', bg: 'rgba(34,197,94,0.12)' };
+    if (d.defect_count >= 3) return { label: t.badge_defect_count(d.defect_count), color: '#EF4444', bg: 'rgba(239,68,68,0.12)' };
+    return { label: t.badge_defect_count(d.defect_count), color: '#F59E0B', bg: 'rgba(245,158,11,0.12)' };
+  }
+
+  const { label, color, bg } = badge();
   const thumb = d.thumbnail_path ? serverImageUrl(d.thumbnail_path) : null;
   const date = new Date(d.created_at);
-  const dateStr = date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-  const timeStr = date.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', hour12: false });
+  const dateStr = date.toLocaleDateString(t.date_locale, { month: 'short', day: 'numeric' });
+  const timeStr = date.toLocaleTimeString(t.date_locale, { hour: '2-digit', minute: '2-digit', hour12: false });
 
   return (
     <Link href={`/detections/${d.id}`} style={{ textDecoration: 'none' }}>
@@ -72,7 +75,7 @@ export default function DetectionCard({ d }: { d: DetectionSummary }) {
                 background: 'rgba(167,139,250,0.12)',
                 padding: '1px 5px',
                 borderRadius: 'var(--radius-sm)',
-              }}>MANUAL</span>
+              }}>{t.badge_manual}</span>
             )}
           </div>
         </div>

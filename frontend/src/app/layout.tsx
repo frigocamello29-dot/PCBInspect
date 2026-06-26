@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import LangInitializer from "@/components/layout/lang-initializer";
 
 export const metadata: Metadata = {
   title: "PCB Inspect",
@@ -9,7 +10,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <LangInitializer />
+        {children}
+      </body>
     </html>
   );
 }

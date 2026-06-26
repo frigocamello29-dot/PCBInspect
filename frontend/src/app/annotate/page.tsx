@@ -6,6 +6,7 @@ import UploadZone from '@/components/detect/upload-zone';
 import AnnotateCanvas, { Annotation, AnnotationMode } from '@/components/annotate/annotate-canvas';
 import AnnotationList from '@/components/annotate/annotation-list';
 import { apiPost, apiUploadFile, ApiError } from '@/lib/api';
+import { useT } from '@/hooks/use-t';
 
 interface DefectType {
   id: number;
@@ -26,6 +27,7 @@ interface AnnotateResponse {
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
 export default function AnnotatePage() {
+  const t = useT();
   const [defectTypes, setDefectTypes] = useState<DefectType[]>([]);
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);  // object URL for canvas
@@ -67,7 +69,7 @@ export default function AnnotatePage() {
       const resp = await apiUploadFile<UploadImageResponse>('/api/annotate/upload', form);
       setImagePath(resp.image_path);
     } catch (err) {
-      setUploadError(err instanceof ApiError ? err.message : 'Upload failed. Try uploading again.');
+      setUploadError(err instanceof ApiError ? err.message : t.annotate_upload_error);
       setPreviewUrl(null);
       setFile(null);
     } finally {
@@ -116,7 +118,7 @@ export default function AnnotatePage() {
       });
       setSavedDetectionId(resp.detection.id);
     } catch (err) {
-      setSaveError(err instanceof ApiError ? err.message : 'Save failed. Try again.');
+      setSaveError(err instanceof ApiError ? err.message : t.annotate_save_error);
     } finally {
       setSaving(false);
     }
@@ -147,10 +149,10 @@ export default function AnnotatePage() {
             color: 'var(--text-primary)',
             margin: '0 0 4px',
           }}>
-            Annotate
+            {t.annotate_title}
           </h1>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, fontFamily: "'Inter', sans-serif" }}>
-            Upload a PCB image, draw bounding boxes, and save annotations to history.
+            {t.annotate_sub}
           </p>
         </div>
 
@@ -173,7 +175,7 @@ export default function AnnotatePage() {
                       fontFamily: "'JetBrains Mono', monospace",
                       fontSize: 12, color: 'var(--copper)',
                     }}>
-                      Uploading…
+                      {t.uploading}
                     </span>
                   </div>
                 )}
@@ -196,6 +198,7 @@ export default function AnnotatePage() {
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   {(['draw', 'select'] as AnnotationMode[]).map((m) => {
                     const active = mode === m;
+                    const label = m === 'draw' ? t.annotate_mode_draw : t.annotate_mode_select;
                     return (
                       <button
                         key={m}
@@ -209,7 +212,6 @@ export default function AnnotatePage() {
                           fontSize: 13, fontWeight: 500,
                           fontFamily: "'Inter', sans-serif",
                           cursor: 'pointer',
-                          textTransform: 'capitalize',
                           transition: 'background 150ms ease, color 150ms ease',
                         }}
                         onMouseEnter={(e) => {
@@ -225,7 +227,7 @@ export default function AnnotatePage() {
                           }
                         }}
                       >
-                        {m}
+                        {label}
                       </button>
                     );
                   })}
@@ -250,12 +252,11 @@ export default function AnnotatePage() {
                     }}
                     onMouseLeave={(e) => { e.currentTarget.style.background = 'transparent'; }}
                   >
-                    Clear all
+                    {t.annotate_clear_all}
                   </button>
 
                   <button
                     onClick={handleClear}
-                    title="Remove image and start over"
                     style={{
                       background: 'transparent',
                       color: 'var(--text-secondary)',
@@ -275,7 +276,7 @@ export default function AnnotatePage() {
                       e.currentTarget.style.color = 'var(--text-secondary)';
                     }}
                   >
-                    Change image
+                    {t.annotate_change_image}
                   </button>
                 </div>
 
@@ -301,9 +302,7 @@ export default function AnnotatePage() {
 
                 {/* Mode hint */}
                 <p style={{ fontSize: 11, color: 'var(--text-dim)', margin: 0, fontFamily: "'Inter', sans-serif" }}>
-                  {mode === 'draw'
-                    ? 'Click and drag on the image to draw a bounding box.'
-                    : 'Click a box to select it. Drag to move. Drag corner/edge handles to resize.'}
+                  {mode === 'draw' ? t.annotate_hint_draw : t.annotate_hint_select}
                 </p>
               </>
             )}

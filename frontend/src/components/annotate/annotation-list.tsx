@@ -2,6 +2,7 @@
 
 import { Annotation } from './annotate-canvas';
 import { DEFECT_COLORS } from '@/lib/poll';
+import { useT } from '@/hooks/use-t';
 
 interface DefectType {
   id: number;
@@ -34,6 +35,7 @@ export default function AnnotationList({
   onSelect, onUpdate, onDelete,
   onSave, saving, savedDetectionId, imageReady,
 }: Props) {
+  const t = useT();
   const canSave = imageReady && annotations.length > 0 && !saving &&
     annotations.every((a) => a.class_id > 0);
 
@@ -46,9 +48,7 @@ export default function AnnotationList({
           fontSize: 13, fontWeight: 500,
           color: 'var(--text-secondary)',
         }}>
-          {annotations.length === 0
-            ? 'No annotations'
-            : `${annotations.length} annotation${annotations.length === 1 ? '' : 's'}`}
+          {annotations.length === 0 ? t.no_annotations : t.annotations_count(annotations.length)}
         </span>
       </div>
 
@@ -62,9 +62,7 @@ export default function AnnotationList({
           textAlign: 'center',
         }}>
           <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0, fontFamily: "'Inter', sans-serif" }}>
-            {imageReady
-              ? 'Switch to Draw mode and drag on the image to add annotations.'
-              : 'Upload an image to start annotating.'}
+            {imageReady ? t.annotate_hint_image_ready : t.annotate_hint_no_image}
           </p>
         </div>
       ) : (
@@ -124,7 +122,7 @@ export default function AnnotationList({
                     }}
                   >
                     {defectTypes.map((d) => (
-                      <option key={d.id} value={d.id}>{d.name}</option>
+                      <option key={d.id} value={d.id}>{t.defect_name(d.id, d.name)}</option>
                     ))}
                   </select>
 
@@ -138,7 +136,7 @@ export default function AnnotationList({
                       letterSpacing: '0.05em',
                       flexShrink: 0,
                     }}>
-                      {dt.severity}
+                      {t.severity_label(dt.severity)}
                     </span>
                   )}
 
@@ -168,7 +166,7 @@ export default function AnnotationList({
                 {/* Confidence slider */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
                   <span style={{ fontSize: 11, color: 'var(--text-dim)', fontFamily: "'Inter', sans-serif", minWidth: 68 }}>
-                    Confidence
+                    {t.confidence_label}
                   </span>
                   <input
                     type="range"
@@ -226,7 +224,7 @@ export default function AnnotationList({
         onMouseEnter={(e) => { if (canSave) e.currentTarget.style.background = 'var(--copper-muted)'; }}
         onMouseLeave={(e) => { if (canSave) e.currentTarget.style.background = 'var(--copper)'; }}
       >
-        {saving ? 'Saving…' : 'Save annotations'}
+        {saving ? t.saving : t.save_annotations}
       </button>
 
       {/* Success message */}
@@ -242,7 +240,7 @@ export default function AnnotationList({
           gap: 12,
         }}>
           <span style={{ fontSize: 13, color: '#22C55E', fontFamily: "'Inter', sans-serif" }}>
-            Annotations saved.
+            {t.annotations_saved}
           </span>
           <a
             href={`/detections/${savedDetectionId}`}
@@ -256,7 +254,7 @@ export default function AnnotationList({
             onMouseEnter={(e) => { e.currentTarget.style.textDecoration = 'underline'; }}
             onMouseLeave={(e) => { e.currentTarget.style.textDecoration = 'none'; }}
           >
-            View in history →
+            {t.view_in_history}
           </a>
         </div>
       )}

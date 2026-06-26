@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useT } from '@/hooks/use-t';
 
 export interface DefectType {
   id: number;
@@ -27,64 +28,13 @@ const SEVERITY_COLOR: Record<string, string> = {
   critical: '#DC2626',
 };
 
-function DefectIcon({ id, color }: { id: number; color: string }) {
-  return (
-    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" aria-hidden="true">
-      {id === 1 && (
-        <>
-          <rect x="4" y="4" width="24" height="24" rx="3" stroke={color} strokeWidth="1.5"/>
-          <circle cx="16" cy="16" r="5" stroke={color} strokeWidth="1.5" strokeDasharray="3 2"/>
-          <line x1="16" y1="4" x2="16" y2="11" stroke={color} strokeWidth="1.5"/>
-          <line x1="16" y1="21" x2="16" y2="28" stroke={color} strokeWidth="1.5"/>
-        </>
-      )}
-      {id === 2 && (
-        <>
-          <path d="M4 16 H28" stroke={color} strokeWidth="1.5"/>
-          <path d="M4 10 H28" stroke={color} strokeWidth="1.5"/>
-          <path d="M4 22 H20 Q22 22 24 19" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="24" cy="22" r="2" fill={color} opacity="0.5"/>
-        </>
-      )}
-      {id === 3 && (
-        <>
-          <path d="M4 16 H12" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <path d="M20 16 H28" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <line x1="14" y1="14" x2="18" y2="18" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <line x1="14" y1="18" x2="18" y2="14" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-        </>
-      )}
-      {id === 4 && (
-        <>
-          <path d="M4 10 H28" stroke={color} strokeWidth="1.5"/>
-          <path d="M4 22 H28" stroke={color} strokeWidth="1.5"/>
-          <path d="M16 10 L16 22" stroke={color} strokeWidth="1.5" strokeDasharray="2 2"/>
-        </>
-      )}
-      {id === 5 && (
-        <>
-          <path d="M4 16 H28" stroke={color} strokeWidth="1.5"/>
-          <path d="M18 16 L22 11" stroke={color} strokeWidth="1.5" strokeLinecap="round"/>
-          <circle cx="22" cy="10" r="2" fill={color} opacity="0.6"/>
-        </>
-      )}
-      {id === 6 && (
-        <>
-          <rect x="4" y="4" width="24" height="24" rx="3" stroke={color} strokeWidth="1.5"/>
-          <rect x="10" y="10" width="8" height="5" rx="1" fill={color} opacity="0.4"/>
-          <rect x="14" y="18" width="10" height="4" rx="1" fill={color} opacity="0.5"/>
-        </>
-      )}
-    </svg>
-  );
-}
-
 interface DefectCardProps {
   defect: DefectType;
   onViewExample: (defect: DefectType) => void;
 }
 
 export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
+  const t = useT();
   const color = DEFECT_COLORS[defect.id] ?? '#8A9189';
   const sevColor = SEVERITY_COLOR[defect.severity] ?? '#8A9189';
   const [hovered, setHovered] = useState(false);
@@ -113,13 +63,18 @@ export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
         borderBottom: '0.5px solid var(--bg-border)',
       }}>
         <div style={{
-          width: 48, height: 48,
-          background: `${color}22`,
+          width: 56, height: 56,
           borderRadius: 'var(--radius-md)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          overflow: 'hidden',
           flexShrink: 0,
+          border: `1px solid ${color}40`,
         }}>
-          <DefectIcon id={defect.id} color={color} />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={`/defect-examples/defect-thumb-${defect.id}.jpg`}
+            alt={`${defect.name} defect example`}
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block' }}
+          />
         </div>
         <div style={{ minWidth: 0 }}>
           <div style={{
@@ -128,7 +83,7 @@ export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
             fontSize: 15,
             color: 'var(--text-primary)',
             marginBottom: 6,
-          }}>{defect.name}</div>
+          }}>{t.defect_name(defect.id, defect.name)}</div>
           <span style={{
             fontFamily: "'JetBrains Mono', monospace",
             fontSize: 11,
@@ -138,7 +93,7 @@ export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
             background: `${sevColor}18`,
             padding: '2px 8px',
             borderRadius: 'var(--radius-sm)',
-          }}>{defect.severity}</span>
+          }}>{t.severity_label(defect.severity)}</span>
         </div>
       </div>
 
@@ -149,7 +104,7 @@ export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
           color: 'var(--text-secondary)',
           lineHeight: 1.6,
           margin: 0,
-        }}>{defect.description}</p>
+        }}>{t.defect_description(defect.id, defect.description)}</p>
         <button
           onClick={() => onViewExample(defect)}
           style={{
@@ -167,7 +122,7 @@ export default function DefectCard({ defect, onViewExample }: DefectCardProps) {
           onMouseLeave={e => (e.currentTarget.style.textDecoration = 'none')}
           aria-label={`View example of ${defect.name}`}
         >
-          View example →
+          {t.view_example}
         </button>
       </div>
     </div>

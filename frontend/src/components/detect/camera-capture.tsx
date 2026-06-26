@@ -1,6 +1,7 @@
 'use client';
 
 import { useEffect, useRef, useState } from 'react';
+import { useT } from '@/hooks/use-t';
 
 interface CameraCaptureProps {
   onCapture: (blob: Blob) => void;
@@ -8,6 +9,7 @@ interface CameraCaptureProps {
 }
 
 export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps) {
+  const t = useT();
   const videoRef = useRef<HTMLVideoElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const streamRef = useRef<MediaStream | null>(null);
@@ -26,11 +28,12 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
           videoRef.current.onloadedmetadata = () => setReady(true);
         }
       } catch {
-        setError('Camera not available. Check browser permissions.');
+        setError(t.camera_error);
       }
     }
     start();
     return () => { streamRef.current?.getTracks().forEach(t => t.stop()); };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   function capture() {
@@ -65,7 +68,7 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
           padding: '12px 16px', borderBottom: '0.5px solid var(--bg-border)',
         }}>
           <span style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: 'var(--text-primary)' }}>
-            Camera capture
+            {t.camera_title}
           </span>
           <button
             onClick={onClose}
@@ -100,7 +103,7 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
                 border: '0.5px solid var(--bg-border)', borderRadius: 'var(--radius-md)',
                 padding: '10px 20px', fontSize: 14, fontFamily: "'Inter', sans-serif", cursor: 'pointer',
               }}
-            >Cancel</button>
+            >{t.camera_cancel}</button>
             <button
               onClick={capture}
               disabled={!ready}
@@ -111,7 +114,7 @@ export default function CameraCapture({ onCapture, onClose }: CameraCaptureProps
                 padding: '10px 24px', fontSize: 14, fontWeight: 500,
                 fontFamily: "'Inter', sans-serif", cursor: ready ? 'pointer' : 'not-allowed',
               }}
-            >Capture</button>
+            >{t.camera_capture}</button>
           </div>
         )}
       </div>

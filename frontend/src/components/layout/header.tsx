@@ -3,18 +3,21 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
-
-const NAV_LINKS = [
-  { href: '/detect', label: 'Detect' },
-  { href: '/annotate', label: 'Annotate' },
-  { href: '/detections', label: 'History' },
-  { href: '/defect-types', label: 'Defect types' },
-];
+import { useT } from '@/hooks/use-t';
+import LangSwitcher from './lang-switcher';
 
 export default function Header() {
   const pathname = usePathname();
   const router = useRouter();
   const { user, logout } = useAuthStore();
+  const t = useT();
+
+  const NAV_LINKS = [
+    { href: '/detect', label: t.nav_detect },
+    { href: '/annotate', label: t.nav_annotate },
+    { href: '/detections', label: t.nav_history },
+    { href: '/defect-types', label: t.nav_defect_types },
+  ];
 
   async function handleLogout() {
     await logout();
@@ -83,38 +86,41 @@ export default function Header() {
         })}
       </nav>
 
-      {/* User */}
-      {user && (
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-          <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
-            {user.full_name}
-          </span>
-          <button
-            onClick={handleLogout}
-            style={{
-              background: 'transparent',
-              color: 'var(--text-secondary)',
-              border: '0.5px solid var(--bg-border)',
-              borderRadius: 'var(--radius-md)',
-              padding: '5px 12px',
-              fontSize: 13,
-              cursor: 'pointer',
-              fontFamily: "'Inter', sans-serif",
-              transition: 'color 150ms ease, background 150ms ease',
-            }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = 'var(--bg-elevated)';
-              e.currentTarget.style.color = 'var(--text-primary)';
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = 'transparent';
-              e.currentTarget.style.color = 'var(--text-secondary)';
-            }}
-          >
-            Sign out
-          </button>
-        </div>
-      )}
+      {/* Right: lang switcher + user */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+        <LangSwitcher />
+        {user && (
+          <>
+            <span style={{ fontSize: 13, color: 'var(--text-secondary)' }}>
+              {user.full_name}
+            </span>
+            <button
+              onClick={handleLogout}
+              style={{
+                background: 'transparent',
+                color: 'var(--text-secondary)',
+                border: '0.5px solid var(--bg-border)',
+                borderRadius: 'var(--radius-md)',
+                padding: '5px 12px',
+                fontSize: 13,
+                cursor: 'pointer',
+                fontFamily: "'Inter', sans-serif",
+                transition: 'color 150ms ease, background 150ms ease',
+              }}
+              onMouseEnter={(e) => {
+                e.currentTarget.style.background = 'var(--bg-elevated)';
+                e.currentTarget.style.color = 'var(--text-primary)';
+              }}
+              onMouseLeave={(e) => {
+                e.currentTarget.style.background = 'transparent';
+                e.currentTarget.style.color = 'var(--text-secondary)';
+              }}
+            >
+              {t.nav_sign_out}
+            </button>
+          </>
+        )}
+      </div>
     </header>
   );
 }

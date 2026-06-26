@@ -1,6 +1,7 @@
 'use client';
 
 import { useRef, useState, DragEvent, useEffect } from 'react';
+import { useT } from '@/hooks/use-t';
 
 interface UploadZoneProps {
   file: File | null;
@@ -17,6 +18,7 @@ function formatBytes(b: number): string {
 }
 
 export default function UploadZone({ file, previewUrl, disabled, onFile, onClear, onCameraOpen }: UploadZoneProps) {
+  const t = useT();
   const [dragging, setDragging] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -106,7 +108,7 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
               onMouseEnter={e => { if (!disabled) { e.currentTarget.style.color = 'var(--text-primary)'; e.currentTarget.style.background = 'var(--bg-surface)'; } }}
               onMouseLeave={e => { e.currentTarget.style.color = 'var(--text-secondary)'; e.currentTarget.style.background = 'transparent'; }}
             >
-              Clear
+              {t.upload_clear}
             </button>
           </div>
         </>
@@ -129,10 +131,10 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
             <line x1="28" y1="40" x2="28" y2="44" stroke="var(--text-dim)" strokeWidth="1.5"/>
           </svg>
           <p style={{ fontSize: 15, fontWeight: 500, color: 'var(--text-secondary)', margin: 0 }}>
-            Drop PCB image here
+            {t.upload_drop}
           </p>
           <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0 }}>
-            JPG, PNG, WEBP up to 10MB
+            {t.upload_hint}
           </p>
           <div style={{ display: 'flex', flexDirection: isMobile ? 'column' : 'row', gap: 8, marginTop: 8, width: isMobile ? '100%' : 'auto' }}>
             <input
@@ -144,7 +146,6 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
               style={{ display: 'none' }}
               onChange={handleInputChange}
             />
-            {/* On mobile: camera first per factory floor use case */}
             {isMobile && (
               <button
                 onClick={() => !disabled && onCameraOpen()}
@@ -158,7 +159,7 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
                   width: '100%',
                 }}
               >
-                Use camera
+                {t.upload_camera}
               </button>
             )}
             <button
@@ -177,24 +178,26 @@ export default function UploadZone({ file, previewUrl, disabled, onFile, onClear
               onMouseEnter={e => { if (!disabled) e.currentTarget.style.background = isMobile ? 'var(--bg-elevated)' : 'var(--copper-muted)'; }}
               onMouseLeave={e => { e.currentTarget.style.background = isMobile ? 'transparent' : 'var(--copper)'; }}
             >
-              Browse files
+              {t.upload_browse}
             </button>
-            {!isMobile && <button
-              onClick={() => !disabled && onCameraOpen()}
-              disabled={disabled}
-              aria-label="Use camera to capture PCB"
-              style={{
-                background: 'transparent', color: 'var(--text-secondary)',
-                border: '0.5px solid var(--bg-border)',
-                borderRadius: 'var(--radius-md)',
-                padding: '10px 20px', fontSize: 14, fontWeight: 500,
-                fontFamily: "'Inter', sans-serif", cursor: disabled ? 'not-allowed' : 'pointer',
-              }}
-              onMouseEnter={e => { if (!disabled) { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-primary)'; } }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
-            >
-              Use camera
-            </button>}
+            {!isMobile && (
+              <button
+                onClick={() => !disabled && onCameraOpen()}
+                disabled={disabled}
+                aria-label="Use camera to capture PCB"
+                style={{
+                  background: 'transparent', color: 'var(--text-secondary)',
+                  border: '0.5px solid var(--bg-border)',
+                  borderRadius: 'var(--radius-md)',
+                  padding: '10px 20px', fontSize: 14, fontWeight: 500,
+                  fontFamily: "'Inter', sans-serif", cursor: disabled ? 'not-allowed' : 'pointer',
+                }}
+                onMouseEnter={e => { if (!disabled) { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-primary)'; } }}
+                onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+              >
+                {t.upload_camera}
+              </button>
+            )}
           </div>
         </div>
       )}

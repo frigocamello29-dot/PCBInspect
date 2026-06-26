@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { StatusResponse, Finding, DEFECT_COLORS, serverImageUrl } from '@/lib/poll';
 import BboxCanvas from './bbox-canvas';
+import { useT } from '@/hooks/use-t';
 
 interface ResultsPanelProps {
   phase: 'idle' | 'analyzing' | 'done' | 'error';
@@ -21,6 +22,7 @@ const SEVERITY_COLORS: Record<string, string> = {
 };
 
 export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindingId, elapsed, onFindingClick }: ResultsPanelProps) {
+  const t = useT();
   const [showOverlay, setShowOverlay] = useState(true);
 
   if (phase === 'idle') {
@@ -39,8 +41,8 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
           <circle cx="12" cy="36" r="3" fill="var(--copper)"/>
           <circle cx="52" cy="36" r="3" fill="var(--copper)"/>
         </svg>
-        <p style={{ fontSize: 15, color: 'var(--text-dim)', margin: 0 }}>No image analyzed yet</p>
-        <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0 }}>Upload a PCB image to start</p>
+        <p style={{ fontSize: 15, color: 'var(--text-dim)', margin: 0 }}>{t.results_idle_title}</p>
+        <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0 }}>{t.results_idle_sub}</p>
       </div>
     );
   }
@@ -66,7 +68,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
         </div>
         <div style={{ textAlign: 'center' }}>
           <p style={{ fontFamily: "'JetBrains Mono', monospace", fontSize: 13, color: 'var(--copper)', margin: 0 }}>
-            Analyzing…
+            {t.analyzing}
           </p>
           <p style={{ fontSize: 11, color: 'var(--text-dim)', margin: '4px 0 0', fontFamily: "'JetBrains Mono', monospace" }}>
             {elapsed}s
@@ -91,7 +93,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
           <circle cx="12" cy="16.5" r="1" fill="var(--red-fail)"/>
         </svg>
         <p style={{ fontSize: 13, color: 'var(--red-fail)', margin: 0, maxWidth: 320 }}>
-          {errorMsg ?? 'Analysis failed. Try uploading the image again.'}
+          {errorMsg ?? t.results_error_generic}
         </p>
       </div>
     );
@@ -120,7 +122,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
           background: isDefective ? 'rgba(239,68,68,0.12)' : 'rgba(34,197,94,0.12)',
           color: isDefective ? 'var(--red-fail)' : 'var(--green-pass)',
         }}>
-          {isDefective ? `${defectCount} defect${defectCount !== 1 ? 's' : ''} found` : 'No defects found'}
+          {isDefective ? t.defects_found(defectCount) : t.no_defects_found}
         </span>
         <span style={{ flex: 1 }} />
         {detection?.inference_time_ms != null && (
@@ -143,7 +145,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
             fontFamily: "'JetBrains Mono', monospace", cursor: 'pointer',
           }}
         >
-          {showOverlay ? 'Overlay' : 'Original'}
+          {showOverlay ? t.results_overlay : t.results_original}
         </button>
       </div>
 
@@ -182,7 +184,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
               >
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                   <span style={{ fontSize: 13, fontWeight: 500, color: 'var(--text-primary)', flex: 1 }}>
-                    {f.defect_type.name}
+                    {t.defect_name(f.defect_type.id, f.defect_type.name)}
                   </span>
                   <span style={{
                     fontSize: 10, fontFamily: "'JetBrains Mono', monospace",
@@ -190,7 +192,7 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
                     padding: '2px 6px', borderRadius: 'var(--radius-sm)',
                     background: sevColor + '20', color: sevColor,
                   }}>
-                    {f.defect_type.severity}
+                    {t.severity_label(f.defect_type.severity)}
                   </span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>

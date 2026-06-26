@@ -6,10 +6,13 @@ import { useRouter } from 'next/navigation';
 import { apiPost, ApiError } from '@/lib/api';
 import { useAuthStore } from '@/store/auth-store';
 import { User } from '@/lib/auth';
+import { useT } from '@/hooks/use-t';
+import LangSwitcher from '@/components/layout/lang-switcher';
 
 export default function LoginPage() {
   const router = useRouter();
   const setUser = useAuthStore((s) => s.setUser);
+  const t = useT();
 
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
@@ -26,11 +29,11 @@ export default function LoginPage() {
       router.replace('/detect');
     } catch (err) {
       if (err instanceof ApiError && err.status === 401) {
-        setError('Invalid email or password.');
+        setError(t.login_error_invalid);
       } else if (err instanceof Error) {
         setError(err.message);
       } else {
-        setError('Login failed. Try again.');
+        setError(t.login_error_generic);
       }
     } finally {
       setLoading(false);
@@ -40,8 +43,12 @@ export default function LoginPage() {
   return (
     <main
       className="min-h-screen flex items-center justify-center px-4"
-      style={{ background: 'var(--bg-base)' }}
+      style={{ background: 'var(--bg-base)', position: 'relative' }}
     >
+      <div style={{ position: 'absolute', top: 16, right: 24 }}>
+        <LangSwitcher />
+      </div>
+
       <div
         className="w-full"
         style={{
@@ -66,7 +73,7 @@ export default function LoginPage() {
             PCB INSPECT
           </span>
           <p style={{ color: 'var(--text-secondary)', fontSize: 13, marginTop: 6 }}>
-            Sign in to your account
+            {t.login_tagline}
           </p>
         </div>
 
@@ -76,7 +83,7 @@ export default function LoginPage() {
               htmlFor="email"
               style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}
             >
-              Email
+              {t.login_email}
             </label>
             <input
               id="email"
@@ -107,7 +114,7 @@ export default function LoginPage() {
               htmlFor="password"
               style={{ display: 'block', fontSize: 13, fontWeight: 500, color: 'var(--text-secondary)', marginBottom: 6 }}
             >
-              Password
+              {t.login_password}
             </label>
             <input
               id="password"
@@ -168,17 +175,17 @@ export default function LoginPage() {
             onMouseEnter={(e) => { if (!loading) e.currentTarget.style.background = 'var(--copper-muted)'; }}
             onMouseLeave={(e) => { if (!loading) e.currentTarget.style.background = 'var(--copper)'; }}
           >
-            {loading ? 'Signing in…' : 'Sign in'}
+            {loading ? t.login_loading : t.login_submit}
           </button>
         </form>
 
         <p style={{ textAlign: 'center', marginTop: 24, fontSize: 13, color: 'var(--text-secondary)' }}>
-          No account?{' '}
+          {t.login_no_account}{' '}
           <Link
             href="/register"
             style={{ color: 'var(--copper)', textDecoration: 'none', fontWeight: 500 }}
           >
-            Create one
+            {t.login_create}
           </Link>
         </p>
       </div>

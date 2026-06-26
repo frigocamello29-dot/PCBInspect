@@ -7,10 +7,12 @@ import CameraCapture from '@/components/detect/camera-capture';
 import ResultsPanel from '@/components/detect/results-panel';
 import { apiUploadFile, ApiError } from '@/lib/api';
 import { pollStatus, StatusResponse } from '@/lib/poll';
+import { useT } from '@/hooks/use-t';
 
 type Phase = 'idle' | 'uploading' | 'analyzing' | 'done' | 'error';
 
 export default function DetectPage() {
+  const t = useT();
   const [file, setFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
   const [phase, setPhase] = useState<Phase>('idle');
@@ -62,7 +64,7 @@ export default function DetectPage() {
       setDetectionId(resp.detection_id);
       setPhase('analyzing');
     } catch (err) {
-      setErrorMsg(err instanceof ApiError ? err.message : 'Upload failed. Try again.');
+      setErrorMsg(err instanceof ApiError ? err.message : t.upload_failed);
       setPhase('error');
     }
   }
@@ -84,7 +86,7 @@ export default function DetectPage() {
         }
         if (result.status === 'failed') {
           setPollResult(result);
-          setErrorMsg(result.detection?.error_message ?? 'Analysis failed. Try uploading the image again.');
+          setErrorMsg(result.detection?.error_message ?? t.results_error_generic);
           setPhase('error');
           return;
         }
@@ -92,7 +94,7 @@ export default function DetectPage() {
         interval = Math.min(Math.floor(interval * 1.3), 5000);
       } catch (err) {
         if ((err as Error).name === 'AbortError') return;
-        setErrorMsg('Analysis failed. Try uploading the image again.');
+        setErrorMsg(t.results_error_generic);
         setPhase('error');
       }
     }
@@ -162,7 +164,7 @@ export default function DetectPage() {
                 onMouseEnter={e => { if (!busy) e.currentTarget.style.background = 'var(--copper-muted)'; }}
                 onMouseLeave={e => { if (!busy) e.currentTarget.style.background = 'var(--copper)'; }}
               >
-                {phase === 'uploading' ? 'Uploading…' : phase === 'analyzing' ? 'Analyzing…' : 'Analyze image'}
+                {phase === 'uploading' ? t.uploading : phase === 'analyzing' ? t.analyzing : t.analyze_button}
               </button>
             )}
           </div>
