@@ -15,6 +15,7 @@ from app.limiter import limiter
 from app.ml.detector import MockPCBDefectDetector, PCBDefectDetector
 from app.routers import auth as auth_router
 from app.routers import detect as detect_router
+from app.routers import detections as detections_router
 from seeds.defect_types import seed as seed_defect_types
 
 detector = None
@@ -72,6 +73,7 @@ app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads"
 
 app.include_router(auth_router.router)
 app.include_router(detect_router.router)
+app.include_router(detections_router.router)
 
 
 @app.get("/api/health")
