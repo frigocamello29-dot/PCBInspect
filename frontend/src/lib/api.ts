@@ -89,3 +89,24 @@ export class ApiError extends Error {
     this.name = 'ApiError';
   }
 }
+
+export async function apiUploadFile<T>(path: string, formData: FormData, _retry = true): Promise<T> {
+  const res = await fetch(`${API_BASE}${path}`, {
+    method: 'POST',
+    body: formData,
+    credentials: 'include',
+  });
+
+  if (res.status === 401 && _retry) {
+    const ok = await refreshTokens();
+    if (ok) return apiUploadFile<T>(path, formData, false);
+  }
+
+  if (!res.ok) {
+    const text = await res.text();
+    let detail = text;
+    try { detail = JSON.parse(text)?.detail ?? text; } catch {}
+    throw new ApiError(res.status, detail);
+  }
+  return res.json();
+}

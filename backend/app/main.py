@@ -5,6 +5,7 @@ from arq import create_pool
 from arq.connections import RedisSettings
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.staticfiles import StaticFiles
 from slowapi import _rate_limit_exceeded_handler
 from slowapi.errors import RateLimitExceeded
 from slowapi.middleware import SlowAPIMiddleware
@@ -14,6 +15,7 @@ from app.limiter import limiter
 from app.ml.detector import MockPCBDefectDetector, PCBDefectDetector
 from app.routers import auth as auth_router
 from app.routers import detect as detect_router
+from seeds.defect_types import seed as seed_defect_types
 
 detector = None
 
@@ -39,6 +41,7 @@ async def lifespan(app: FastAPI):
             conf_threshold=settings.CONFIDENCE_THRESHOLD,
         )
 
+    await seed_defect_types()
     app.state.arq_pool = await create_pool(_redis_from_url(settings.REDIS_URL))
 
     yield
@@ -64,6 +67,8 @@ app.add_middleware(
 def get_detector():
     return detector
 
+
+app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 app.include_router(auth_router.router)
 app.include_router(detect_router.router)

@@ -5,7 +5,7 @@ import numpy as np
 
 
 DEFECT_CLASSES = {
-    1: "Missing Hole",
+    1: "pin-hole",
     2: "Mouse Bite",
     3: "Open Circuit",
     4: "Short",
@@ -83,20 +83,23 @@ class PCBDefectDetector:
         if len(preds_f) == 0:
             return []
 
-        # cx, cy, w, h (normalized 0-1 in 640×640 space) → pixel coords in original
+        # cx, cy, w, h already in 640px coords → scale to original image
         scale_x, scale_y = w / _INPUT_SIZE, h / _INPUT_SIZE
         cx, cy, bw, bh = preds_f[:, 0], preds_f[:, 1], preds_f[:, 2], preds_f[:, 3]
-        rx1 = (cx - bw / 2) * _INPUT_SIZE * scale_x
-        ry1 = (cy - bh / 2) * _INPUT_SIZE * scale_y
-        rw = bw * _INPUT_SIZE * scale_x
-        rh = bh * _INPUT_SIZE * scale_y
+        rx1 = (cx - bw / 2) * scale_x
+        ry1 = (cy - bh / 2) * scale_y
+        rw = bw * scale_x
+        rh = bh * scale_y
 
         boxes = np.stack([rx1, ry1, rw, rh], axis=1)
         keep = _nms(boxes, confs_f, iou_threshold=0.45)
 
+        # model class order: 0=open, 1=short, 2=mousebite, 3=spur, 4=copper, 5=pin-hole
+        _MODEL_TO_DEFECT_ID = {0: 3, 1: 4, 2: 2, 3: 5, 4: 6, 5: 1}
+
         results: list[DetectionResult] = []
         for i in keep:
-            cid = int(class_ids_f[i]) + 1  # model 0-indexed → DEFECT_CLASSES 1-indexed
+            cid = _MODEL_TO_DEFECT_ID.get(int(class_ids_f[i]), int(class_ids_f[i]) + 1)
             results.append(DetectionResult(
                 class_id=cid,
                 class_name=DEFECT_CLASSES.get(cid, f"class_{cid}"),

@@ -36,6 +36,20 @@ services:
     expose:
       - "8000"
 
+  worker:
+    build: ./backend
+    command: python -m arq app.tasks.detect_task.WorkerSettings
+    env_file: ./backend/.env
+    volumes:
+      - ./backend:/app
+      - uploads:/app/uploads
+      - ./ml:/app/ml:ro
+    depends_on:
+      db:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+
   frontend:
     build: ./frontend
     env_file: ./frontend/.env.local

@@ -8,7 +8,7 @@ from app.database import AsyncSessionLocal
 DEFECT_TYPES = [
     {
         "id": 1,
-        "name": "Missing Hole",
+        "name": "pin-hole",
         "description": "Hole not drilled or fully blocked",
         "severity": "high",
         "icon_name": "circle-off",
@@ -59,7 +59,11 @@ async def seed() -> None:
                     """
                     INSERT INTO defect_types (id, name, description, severity, icon_name)
                     VALUES (:id, :name, :description, :severity, :icon_name)
-                    ON CONFLICT (id) DO NOTHING
+                    ON CONFLICT (id) DO UPDATE SET
+                        name = EXCLUDED.name,
+                        description = EXCLUDED.description,
+                        severity = EXCLUDED.severity,
+                        icon_name = EXCLUDED.icon_name
                     """
                 ),
                 row,
