@@ -101,6 +101,7 @@ export interface Translations {
   findings_title: string;
   confidence_label: string;
   download_image: string;
+  download_annotated: string;
   delete_button: string;
   delete_dialog_title: string;
   delete_dialog_body: string;
@@ -148,6 +149,27 @@ export interface Translations {
   // Defect type data (id + API fallback)
   defect_name: (id: number, fallback: string) => string;
   defect_description: (id: number, fallback: string) => string;
+
+  // Correction page (/annotate/:detection_id)
+  correct_annotations: string;
+  back_detection: string;
+  correct_title: string;
+  correct_sub: string;
+  correct_loading: string;
+  correct_not_found: string;
+  correct_model_section: string;
+  correct_corrections_section: string;
+  correct_diff_bar: (added: number, edited: number, removed: number) => string;
+  correct_save: string;
+  correct_saving: string;
+  correct_saved: string;
+  correct_save_error: string;
+  correct_undo: string;
+  tag_new: string;
+  tag_edited: string;
+  correct_removed_label: string;
+  correct_no_model_findings: string;
+  correct_no_corrections: string;
 
   // Date locale
   date_locale: string;
@@ -235,6 +257,7 @@ const en: Translations = {
   findings_title: 'FINDINGS',
   confidence_label: 'confidence',
   download_image: 'Download image',
+  download_annotated: 'Download annotated',
   delete_button: 'Delete',
   delete_dialog_title: 'Delete this detection?',
   delete_dialog_body: "Can't be undone. The image and all findings will be permanently removed.",
@@ -276,6 +299,26 @@ const en: Translations = {
 
   defect_name: (_id, fallback) => fallback,
   defect_description: (_id, fallback) => fallback,
+
+  correct_annotations: 'Correct annotations',
+  back_detection: '← Detection',
+  correct_title: 'Correct annotations',
+  correct_sub: 'Edit or add bounding boxes to correct model findings.',
+  correct_loading: 'Loading detection…',
+  correct_not_found: 'Detection not found.',
+  correct_model_section: 'MODEL FINDINGS',
+  correct_corrections_section: 'CORRECTIONS',
+  correct_diff_bar: (a, e, r) => `+${a} added · ${e} edited · ${r} removed`,
+  correct_save: 'Save corrections',
+  correct_saving: 'Saving…',
+  correct_saved: 'Corrections saved.',
+  correct_save_error: 'Save failed. Try again.',
+  correct_undo: 'Undo',
+  tag_new: 'NEW',
+  tag_edited: 'EDITED',
+  correct_removed_label: 'REMOVED',
+  correct_no_model_findings: 'No model findings',
+  correct_no_corrections: 'No corrections yet. Draw on the image to add.',
 
   date_locale: 'en-US',
 };
@@ -362,6 +405,7 @@ const ru: Translations = {
   findings_title: 'РЕЗУЛЬТАТЫ',
   confidence_label: 'достоверность',
   download_image: 'Скачать',
+  download_annotated: 'Скачать с разметкой',
   delete_button: 'Удалить',
   delete_dialog_title: 'Удалить эту проверку?',
   delete_dialog_body: 'Это действие необратимо. Изображение и все результаты будут удалены навсегда.',
@@ -400,6 +444,26 @@ const ru: Translations = {
   badge_defect_count: (n) => `${n} ${ruPlural(n, 'ДЕФЕКТ', 'ДЕФЕКТА', 'ДЕФЕКТОВ')}`,
 
   severity_label: (s) => ({ low: 'низкий', medium: 'средний', high: 'высокий', critical: 'критический' } as Record<string, string>)[s] ?? s,
+
+  correct_annotations: 'Исправить аннотации',
+  back_detection: '← Проверка',
+  correct_title: 'Исправить аннотации',
+  correct_sub: 'Редактируйте или добавляйте рамки для коррекции результатов модели.',
+  correct_loading: 'Загрузка…',
+  correct_not_found: 'Проверка не найдена.',
+  correct_model_section: 'РЕЗУЛЬТАТЫ МОДЕЛИ',
+  correct_corrections_section: 'ИСПРАВЛЕНИЯ',
+  correct_diff_bar: (a, e, r) => `+${a} добавлено · ${e} изменено · ${r} удалено`,
+  correct_save: 'Сохранить исправления',
+  correct_saving: 'Сохранение…',
+  correct_saved: 'Исправления сохранены.',
+  correct_save_error: 'Ошибка сохранения. Попробуйте снова.',
+  correct_undo: 'Отменить',
+  tag_new: 'НОВЫЙ',
+  tag_edited: 'ИЗМЕНЁН',
+  correct_removed_label: 'УДАЛЁН',
+  correct_no_model_findings: 'Результаты модели отсутствуют',
+  correct_no_corrections: 'Исправлений нет. Нарисуйте рамку на изображении.',
 
   defect_name: (id, fallback) => ({
     1: 'Отсутствующее отверстие',

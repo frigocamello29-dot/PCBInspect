@@ -33,14 +33,6 @@ export default function ResultsPanel({ phase, pollResult, errorMsg, activeFindin
         background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)',
         borderRadius: 'var(--radius-lg)', textAlign: 'center',
       }}>
-        <svg width="64" height="40" viewBox="0 0 64 40" fill="none" opacity="0.2">
-          <path d="M4 20 H16 V8 H48 V20 H60" stroke="var(--copper)" strokeWidth="2"/>
-          <path d="M4 30 H12 V36 H52 V30 H60" stroke="var(--copper)" strokeWidth="2"/>
-          <circle cx="16" cy="20" r="3" fill="var(--copper)"/>
-          <circle cx="48" cy="20" r="3" fill="var(--copper)"/>
-          <circle cx="12" cy="36" r="3" fill="var(--copper)"/>
-          <circle cx="52" cy="36" r="3" fill="var(--copper)"/>
-        </svg>
         <p style={{ fontSize: 15, color: 'var(--text-dim)', margin: 0 }}>{t.results_idle_title}</p>
         <p style={{ fontSize: 13, color: 'var(--text-dim)', margin: 0 }}>{t.results_idle_sub}</p>
       </div>

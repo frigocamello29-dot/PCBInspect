@@ -1,10 +1,10 @@
 'use client';
 
 import { useParams, useRouter } from 'next/navigation';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import ProtectedLayout from '@/components/layout/protected-layout';
-import BboxCanvas from '@/components/detect/bbox-canvas';
+import BboxCanvas, { BboxCanvasHandle } from '@/components/detect/bbox-canvas';
 import { DetectionSummary, Finding, serverImageUrl, DEFECT_COLORS } from '@/lib/poll';
 import { apiGet, apiDelete } from '@/lib/api';
 import { useT } from '@/hooks/use-t';
@@ -12,6 +12,18 @@ import { useT } from '@/hooks/use-t';
 interface DetectionDetail {
   detection: DetectionSummary;
   findings: Finding[];
+}
+
+interface AnnotationsResponse {
+  model_findings: Finding[];
+  correction: {
+    id: string;
+    findings: Array<{
+      class_id: number;
+      bbox_x1: number; bbox_y1: number;
+      bbox_x2: number; bbox_y2: number;
+    }>;
+  } | null;
 }
 
 const SEVERITY_COLORS: Record<string, string> = {
@@ -44,6 +56,7 @@ export default function DetectionDetailPage() {
   const router = useRouter();
   const t = useT();
 
+  const bboxRef = useRef<BboxCanvasHandle>(null);
   const [data, setData] = useState<DetectionDetail | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,8 +66,25 @@ export default function DetectionDetailPage() {
   const [deleting, setDeleting] = useState(false);
 
   useEffect(() => {
-    apiGet<DetectionDetail>(`/api/detections/${id}`)
-      .then(setData)
+    Promise.all([
+      apiGet<DetectionDetail>(`/api/detections/${id}`),
+      apiGet<AnnotationsResponse>(`/api/detections/${id}/annotations`).catch(() => null),
+    ])
+      .then(([detail, annot]) => {
+        if (annot?.correction) {
+          const dtMap = new Map<number, Finding['defect_type']>();
+          for (const f of annot.model_findings) dtMap.set(f.defect_type.id, f.defect_type);
+          const correctedFindings: Finding[] = annot.correction.findings.map((cf, i) => ({
+            id: `corr-${i}`,
+            defect_type: dtMap.get(cf.class_id) ?? { id: cf.class_id, name: `Class ${cf.class_id}`, severity: 'medium' },
+            confidence: 1.0,
+            bbox: { x1: cf.bbox_x1, y1: cf.bbox_y1, x2: cf.bbox_x2, y2: cf.bbox_y2 },
+          }));
+          setData({ detection: detail.detection, findings: correctedFindings });
+        } else {
+          setData(detail);
+        }
+      })
       .catch(() => setError(t.not_found))
       .finally(() => setLoading(false));
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -116,7 +146,7 @@ export default function DetectionDetailPage() {
             {/* image viewer */}
             <div style={{ background: 'var(--bg-surface)', border: '0.5px solid var(--bg-border)', borderRadius: 'var(--radius-lg)', overflow: 'hidden' }}>
               <div style={{ display: 'flex', justifyContent: 'flex-end', padding: '8px 12px', borderBottom: '0.5px solid var(--bg-border)', gap: 6 }}>
-                {[t.view_original, t.view_annotated].map((v, i) => {
+                {[t.view_original, t.results_overlay].map((v, i) => {
                   const isAnnotated = i === 1;
                   return (
                     <button key={v} onClick={() => setShowOverlay(isAnnotated)} style={{
@@ -132,6 +162,7 @@ export default function DetectionDetailPage() {
               <div style={{ padding: 16 }}>
                 {det.image_path && (
                   <BboxCanvas
+                    ref={bboxRef}
                     imageUrl={serverImageUrl(det.image_path)}
                     findings={findings}
                     activeFindingId={activeFindingId}
@@ -225,30 +256,60 @@ export default function DetectionDetailPage() {
               )}
 
               {/* actions */}
-              <div style={{ display: 'flex', gap: 8 }}>
-                <a
-                  href={serverImageUrl(det.image_path)}
-                  download
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+                <div style={{ display: 'flex', gap: 8 }}>
+                  <a
+                    href={serverImageUrl(det.image_path)}
+                    download
+                    style={{
+                      flex: 1, textAlign: 'center', padding: '10px 0',
+                      background: 'var(--copper)', color: '#0D0F0E',
+                      fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
+                      borderRadius: 'var(--radius-md)', textDecoration: 'none',
+                      border: 'none', cursor: 'pointer',
+                    }}
+                  >{t.download_image}</a>
+                  <button
+                    onClick={() => setShowDeleteDialog(true)}
+                    style={{
+                      flex: 1, padding: '10px 0',
+                      background: 'transparent', color: 'var(--red-fail)',
+                      fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
+                      borderRadius: 'var(--radius-md)',
+                      border: '0.5px solid rgba(239,68,68,0.3)', cursor: 'pointer',
+                    }}
+                    onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
+                    onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
+                  >{t.delete_button}</button>
+                </div>
+                {findings.length > 0 && (
+                  <button
+                    onClick={() => bboxRef.current?.downloadAnnotated(`pcb-annotated-${det.id.slice(0, 8)}.png`)}
+                    style={{
+                      padding: '10px 0',
+                      background: 'transparent', color: 'var(--text-secondary)',
+                      fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
+                      borderRadius: 'var(--radius-md)',
+                      border: '0.5px solid var(--bg-border)', cursor: 'pointer',
+                      transition: 'background 150ms ease, color 150ms ease',
+                    }}
+                    onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                  >{t.download_annotated}</button>
+                )}
+                <Link
+                  href={`/annotate/${id}`}
                   style={{
-                    flex: 1, textAlign: 'center', padding: '10px 0',
-                    background: 'var(--copper)', color: '#0D0F0E',
+                    display: 'block', textAlign: 'center', padding: '10px 0',
+                    background: 'transparent', color: 'var(--text-secondary)',
                     fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
                     borderRadius: 'var(--radius-md)', textDecoration: 'none',
-                    border: 'none', cursor: 'pointer',
+                    border: '0.5px solid var(--bg-border)',
+                    transition: 'background 150ms ease, color 150ms ease',
                   }}
-                >{t.download_image}</a>
-                <button
-                  onClick={() => setShowDeleteDialog(true)}
-                  style={{
-                    flex: 1, padding: '10px 0',
-                    background: 'transparent', color: 'var(--red-fail)',
-                    fontFamily: "'Inter', sans-serif", fontWeight: 500, fontSize: 14,
-                    borderRadius: 'var(--radius-md)',
-                    border: '0.5px solid rgba(239,68,68,0.3)', cursor: 'pointer',
-                  }}
-                  onMouseEnter={e => (e.currentTarget.style.background = 'rgba(239,68,68,0.08)')}
-                  onMouseLeave={e => (e.currentTarget.style.background = 'transparent')}
-                >{t.delete_button}</button>
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--bg-elevated)'; e.currentTarget.style.color = 'var(--text-primary)'; }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--text-secondary)'; }}
+                >{t.correct_annotations}</Link>
               </div>
             </div>
           </div>

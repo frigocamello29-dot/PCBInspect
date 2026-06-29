@@ -123,8 +123,8 @@ export default function DetectPage() {
       <style>{`
         .detect-grid {
           display: grid;
-          grid-template-columns: 2fr 3fr;
-          gap: 24px;
+          grid-template-columns: 2fr 2.5fr;
+          gap: 16px;
           align-items: start;
         }
         @media (max-width: 767px) {
