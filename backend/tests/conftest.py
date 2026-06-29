@@ -45,6 +45,8 @@ async def client(db_session: AsyncSession):
     mock_job.job_id = "test-job-id"
     mock_arq = AsyncMock()
     mock_arq.enqueue_job = AsyncMock(return_value=mock_job)
+
+    # ASGITransport doesn't run lifespan — set state directly
     app.state.arq_pool = mock_arq
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as ac:

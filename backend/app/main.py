@@ -1,3 +1,4 @@
+import os
 from contextlib import asynccontextmanager
 from urllib.parse import urlparse
 
@@ -14,6 +15,7 @@ from app.config import settings
 from app.limiter import limiter
 from app.ml.detector import MockPCBDefectDetector, PCBDefectDetector
 from app.routers import annotate as annotate_router
+from app.routers import annotations as annotations_router
 from app.routers import auth as auth_router
 from app.routers import defect_types as defect_types_router
 from app.routers import detect as detect_router
@@ -71,6 +73,7 @@ def get_detector():
     return detector
 
 
+os.makedirs(settings.UPLOAD_DIR, exist_ok=True)
 app.mount("/uploads", StaticFiles(directory=settings.UPLOAD_DIR), name="uploads")
 
 app.include_router(auth_router.router)
@@ -78,6 +81,7 @@ app.include_router(defect_types_router.router)
 app.include_router(detect_router.router)
 app.include_router(detections_router.router)
 app.include_router(annotate_router.router)
+app.include_router(annotations_router.router)
 
 
 @app.get("/api/health")
