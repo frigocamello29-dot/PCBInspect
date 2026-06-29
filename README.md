@@ -1,62 +1,62 @@
-# PCB Defect Detector
+# Детектор дефектов печатных плат
 
-YOLO11s trained on [DeepPCB](https://github.com/tangsanli5201/DeepPCB) for 6-class PCB defect detection, served through a full-stack web app with async inference and client-side bbox rendering.
+YOLO11s, обученная на [DeepPCB](https://github.com/tangsanli5201/DeepPCB) для обнаружения 6 классов дефектов печатных плат. Модель используется в full-stack веб-приложении с отрисовкой bounding box на стороне клиента.
 
 ---
 
-## Model Performance
+## Метрики модели
 
-| Metric | Score |
-|--------|-------|
+| Метрика | Значение |
+|---------|----------|
 | mAP@50 | 0.993 |
 | mAP@50-95 | 0.827 |
 | Precision | 0.995 |
 | Recall | 0.978 |
 
-YOLO11s · 960×960 · 80 epochs · batch 16 · DeepPCB dataset
+YOLO11s · 960×960 · 80 эпох · batch 16 · датасет DeepPCB
 
-**Training curves**
+**Кривые обучения**
 
-![Training results](docs/results.png)
+![Результаты обучения](docs/results.png)
 
-**Precision-Recall curve**
+**Кривая Precision-Recall**
 
 ![PR curve](docs/BoxPR_curve.png)
 
 ---
 
-## Defect Classes
+## Классы дефектов
 
-| ID | Class | Severity |
-|----|-------|----------|
-| 1 | Missing Hole | high |
-| 2 | Mouse Bite | medium |
-| 3 | Open Circuit | high |
-| 4 | Short | critical |
-| 5 | Spur | low |
-| 6 | Spurious Copper | medium |
-
----
-
-## Detection Example
-
-![Detection example](docs/detection_example.png)
+| ID | Класс           |
+|----|-----------------|
+| 1 | Pin-hole        |
+| 2 | Mouse bite      |
+| 3 | Open            |
+| 4 | Short circuit   |
+| 5 | Spur            |
+| 6 | Spurious copper |
 
 ---
 
-## App
+## Пример обнаружения
 
-<!-- add app screenshots here -->
+![Пример обнаружения](docs/detection_example.png)
 
-**Stack:**
+---
+
+## Приложение
+
+![Скриншот приложения](docs/appScreenshot.png)
+
+**Стек:**
 
 - Frontend — Next.js 14 + TypeScript + Tailwind + shadcn/ui
 - Backend — FastAPI + SQLAlchemy + ARQ/Redis
-- ML — YOLO11s → ONNX, singleton loaded at startup
+- ML — YOLO11s → ONNX, singleton загружается при запуске
 - DB — PostgreSQL
 
 
-### Run
+### Запуск
 
 ```bash
 docker-compose up
@@ -67,12 +67,12 @@ API docs: `http://localhost:8000/docs`
 
 ---
 
-## Directory Structure
+## Структура каталогов
 
 ```
 DefectDetectorApp/
-├── backend/         # FastAPI app, ML inference, ARQ worker
-├── frontend/        # Next.js app
-├── ml/              # ONNX model, training/export scripts
+├── backend/         # FastAPI-приложение, ML-инференс, ARQ worker
+├── frontend/        # Next.js-приложение
+├── ml/              # ONNX-модель, скрипты обучения/экспорта
 └── docker-compose.yml
 ```
