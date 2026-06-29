@@ -109,7 +109,7 @@ function ExampleModal({ defect, onClose }: { defect: DefectType; onClose: () => 
         {/* caption */}
         <div style={{ padding: '14px 20px', borderTop: '0.5px solid var(--bg-border)' }}>
           <p style={{ fontSize: 13, color: 'var(--text-secondary)', margin: 0, lineHeight: 1.6 }}>
-            {defect.description}
+            {t.defect_description(defect.id, defect.description)}
           </p>
         </div>
       </div>

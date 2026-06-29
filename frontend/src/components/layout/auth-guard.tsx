@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { useAuthStore } from '@/store/auth-store';
 
@@ -34,5 +34,5 @@ export default function AuthGuard({ children }: AuthGuardProps) {
 
   if (!user) return null;
 
-  return <>{children}</>;
+  return <React.Fragment key={user.id}>{children}</React.Fragment>;
 }

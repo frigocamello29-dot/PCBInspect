@@ -66,18 +66,24 @@ export default function Header() {
                 fontFamily: "'Inter', sans-serif",
                 fontWeight: 500,
                 fontSize: 13,
-                color: active ? 'var(--copper)' : 'var(--text-secondary)',
+                color: active ? '#FFFFFF' : 'var(--text-secondary)',
                 textDecoration: 'none',
                 padding: '6px 12px',
                 borderRadius: 'var(--radius-md)',
-                borderLeft: active ? '2px solid var(--copper)' : '2px solid transparent',
-                transition: 'color 150ms ease',
+                background: active ? 'var(--copper)' : 'transparent',
+                transition: 'color 150ms ease, background 150ms ease',
               }}
               onMouseEnter={(e) => {
-                if (!active) e.currentTarget.style.color = 'var(--copper)';
+                if (!active) {
+                  e.currentTarget.style.background = 'var(--bg-elevated)';
+                  e.currentTarget.style.color = 'var(--text-primary)';
+                }
               }}
               onMouseLeave={(e) => {
-                if (!active) e.currentTarget.style.color = 'var(--text-secondary)';
+                if (!active) {
+                  e.currentTarget.style.background = 'transparent';
+                  e.currentTarget.style.color = 'var(--text-secondary)';
+                }
               }}
             >
               {label}

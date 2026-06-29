@@ -28,6 +28,7 @@ export async function apiFetch(
   const res = await fetch(`${API_BASE}${path}`, {
     ...init,
     credentials: 'include',
+    cache: 'no-store',
     headers: {
       'Content-Type': 'application/json',
       ...init.headers,

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import ProtectedLayout from '@/components/layout/protected-layout';
 import DetectionCard from '@/components/detections/detection-card';
 import { DetectionSummary } from '@/lib/poll';
@@ -16,6 +16,9 @@ interface DetectionListResponse {
 
 export default function DetectionsPage() {
   const t = useT();
+  const tRef = useRef(t);
+  tRef.current = t;
+
   const [data, setData] = useState<DetectionListResponse | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -38,11 +41,11 @@ export default function DetectionsPage() {
       const res = await apiGet<DetectionListResponse>(`/api/detections?${params}`);
       setData(res);
     } catch {
-      setError(t.detections_error);
+      setError(tRef.current.detections_error);
     } finally {
       setLoading(false);
     }
-  }, [page, defectiveOnly, source, fromDate, toDate, t]);
+  }, [page, defectiveOnly, source, fromDate, toDate]);
 
   useEffect(() => { load(); }, [load]);
 
