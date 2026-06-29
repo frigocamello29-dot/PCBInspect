@@ -1,5 +1,20 @@
 const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? 'http://localhost:8000';
 
+function extractDetail(text: string): string {
+  try {
+    const parsed = JSON.parse(text);
+    const detail = parsed?.detail;
+    if (typeof detail === 'string') return detail;
+    // FastAPI validation errors: [{msg: "...", loc: [...], ...}]
+    if (Array.isArray(detail)) {
+      return detail.map((d) => d?.msg ?? String(d)).join('; ');
+    }
+    return text;
+  } catch {
+    return text;
+  }
+}
+
 let isRefreshing = false;
 let refreshQueue: Array<() => void> = [];
 
@@ -59,7 +74,7 @@ export async function apiFetch(
 
 export async function apiGet<T>(path: string): Promise<T> {
   const res = await apiFetch(path);
-  if (!res.ok) throw new ApiError(res.status, await res.text());
+  if (!res.ok) throw new ApiError(res.status, extractDetail(await res.text()));
   return res.json();
 }
 
@@ -68,20 +83,13 @@ export async function apiPost<T>(path: string, body: unknown): Promise<T> {
     method: 'POST',
     body: JSON.stringify(body),
   });
-  if (!res.ok) {
-    const text = await res.text();
-    let detail = text;
-    try {
-      detail = JSON.parse(text)?.detail ?? text;
-    } catch {}
-    throw new ApiError(res.status, detail);
-  }
+  if (!res.ok) throw new ApiError(res.status, extractDetail(await res.text()));
   return res.json();
 }
 
 export async function apiDelete(path: string): Promise<void> {
   const res = await apiFetch(path, { method: 'DELETE' });
-  if (!res.ok) throw new ApiError(res.status, await res.text());
+  if (!res.ok) throw new ApiError(res.status, extractDetail(await res.text()));
 }
 
 export class ApiError extends Error {
@@ -103,11 +111,6 @@ export async function apiUploadFile<T>(path: string, formData: FormData, _retry 
     if (ok) return apiUploadFile<T>(path, formData, false);
   }
 
-  if (!res.ok) {
-    const text = await res.text();
-    let detail = text;
-    try { detail = JSON.parse(text)?.detail ?? text; } catch {}
-    throw new ApiError(res.status, detail);
-  }
+  if (!res.ok) throw new ApiError(res.status, extractDetail(await res.text()));
   return res.json();
 }
