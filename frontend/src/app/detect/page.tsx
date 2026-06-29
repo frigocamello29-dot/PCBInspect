@@ -123,7 +123,7 @@ export default function DetectPage() {
       <style>{`
         .detect-grid {
           display: grid;
-          grid-template-columns: 2fr 2.5fr;
+          grid-template-columns: 2fr 2fr;
           gap: 16px;
           align-items: start;
         }

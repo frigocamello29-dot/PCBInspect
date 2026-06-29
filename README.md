@@ -55,7 +55,6 @@ YOLO11s · 960×960 · 80 epochs · batch 16 · DeepPCB dataset
 - ML — YOLO11s → ONNX, singleton loaded at startup
 - DB — PostgreSQL
 
-Upload returns a job ID immediately. Frontend polls until complete and draws bounding boxes via canvas — no annotated image stored server-side.
 
 ### Run
 
