@@ -50,7 +50,7 @@ YOLO11s · 960×960 · 80 эпох · batch 16 · датасет DeepPCB
 
 ## Приложение
 
-![Скриншот приложения](docs/appScreenshot.png)
+![видео приложения](docs/example.gif)
 
 **Стек:**
 
