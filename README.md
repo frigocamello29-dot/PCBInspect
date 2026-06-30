@@ -23,6 +23,9 @@ YOLO11s · 960×960 · 80 эпох · batch 16 · датасет DeepPCB
 
 ![PR curve](docs/BoxPR_curve.png)
 
+**Матрица Ошибок**
+![Confusion matrix](docs/confusion_matrix.png)
+
 ---
 
 ## Классы дефектов

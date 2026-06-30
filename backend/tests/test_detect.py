@@ -13,10 +13,6 @@ from app.models.detection import Detection
 from app.services import image_service
 
 
-# ---------------------------------------------------------------------------
-# Helpers
-# ---------------------------------------------------------------------------
-
 REG_PAYLOAD = {"email": "det@example.com", "password": "Secret123!", "full_name": "Det User"}
 
 
@@ -35,10 +31,6 @@ def _make_png() -> bytes:
 async def _register_and_login(client: AsyncClient) -> None:
     await client.post("/api/auth/register", json=REG_PAYLOAD)
 
-
-# ---------------------------------------------------------------------------
-# image_service unit tests
-# ---------------------------------------------------------------------------
 
 def test_image_service_accepts_jpeg(tmp_path):
     with patch.object(image_service, "_MAX_BYTES", 10 * 1024 * 1024), \
@@ -71,10 +63,6 @@ def test_image_service_rejects_oversized(tmp_path):
         with pytest.raises(ValueError, match="too large"):
             image_service.validate_and_save(_make_jpeg())
 
-
-# ---------------------------------------------------------------------------
-# detect task unit tests
-# ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_task_run_detection_completed(db_session: AsyncSession):
@@ -152,10 +140,6 @@ async def test_task_run_detection_failed(db_session: AsyncSession):
     assert detection.error_message is not None
 
 
-# ---------------------------------------------------------------------------
-# POST /api/detect
-# ---------------------------------------------------------------------------
-
 @pytest.mark.asyncio
 async def test_detect_requires_auth(client: AsyncClient):
     r = await client.post("/api/detect", files={"file": ("x.jpg", _make_jpeg(), "image/jpeg")})
@@ -196,10 +180,6 @@ async def test_detect_rejects_bad_mime(client: AsyncClient, tmp_path):
     assert r.status_code == 422
     assert "Unsupported" in r.json()["detail"]
 
-
-# ---------------------------------------------------------------------------
-# GET /api/detect/status/:id
-# ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_status_requires_auth(client: AsyncClient):

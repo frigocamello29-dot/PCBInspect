@@ -17,10 +17,6 @@ MODEL_PATH = Path(__file__).parents[2] / "ml" / "models" / "pcb_defect_v1.onnx"
 SKIP_REAL = not MODEL_PATH.exists()
 
 
-# ---------------------------------------------------------------------------
-# _nms
-# ---------------------------------------------------------------------------
-
 def test_nms_empty():
     assert _nms(np.zeros((0, 4)), np.array([])) == []
 
@@ -38,10 +34,6 @@ def test_nms_full_overlap_keeps_highest():
     keep = _nms(boxes, scores)
     assert keep == [1]
 
-
-# ---------------------------------------------------------------------------
-# MockPCBDefectDetector
-# ---------------------------------------------------------------------------
 
 def test_mock_returns_list():
     det = MockPCBDefectDetector()
@@ -70,10 +62,6 @@ def test_mock_no_model_path_needed():
     result = det.predict(np.zeros((100, 100, 3), dtype=np.uint8))
     assert isinstance(result, list)
 
-
-# ---------------------------------------------------------------------------
-# PCBDefectDetector (real ONNX)
-# ---------------------------------------------------------------------------
 
 @pytest.mark.skipif(SKIP_REAL, reason="ONNX model not present")
 def test_real_detector_loads():

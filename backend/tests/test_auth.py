@@ -6,10 +6,6 @@ from sqlalchemy.ext.asyncio import AsyncSession
 REG_PAYLOAD = {"email": "test@example.com", "password": "Secret123!", "full_name": "Test User"}
 
 
-# ---------------------------------------------------------------------------
-# Register
-# ---------------------------------------------------------------------------
-
 @pytest.mark.asyncio
 async def test_register_success(client: AsyncClient):
     r = await client.post("/api/auth/register", json=REG_PAYLOAD)
@@ -18,7 +14,6 @@ async def test_register_success(client: AsyncClient):
     assert body["email"] == REG_PAYLOAD["email"]
     assert body["full_name"] == REG_PAYLOAD["full_name"]
     assert "id" in body
-    # cookies must be set
     assert "access_token" in r.cookies
     assert "refresh_token" in r.cookies
 
@@ -29,10 +24,6 @@ async def test_register_duplicate_email(client: AsyncClient):
     r = await client.post("/api/auth/register", json=REG_PAYLOAD)
     assert r.status_code == 409
 
-
-# ---------------------------------------------------------------------------
-# Login
-# ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_login_success(client: AsyncClient):
@@ -56,10 +47,6 @@ async def test_login_unknown_email(client: AsyncClient):
     assert r.status_code == 401
 
 
-# ---------------------------------------------------------------------------
-# /me
-# ---------------------------------------------------------------------------
-
 @pytest.mark.asyncio
 async def test_me_authenticated(client: AsyncClient):
     await client.post("/api/auth/register", json=REG_PAYLOAD)
@@ -73,10 +60,6 @@ async def test_me_unauthenticated(client: AsyncClient):
     r = await client.get("/api/auth/me")
     assert r.status_code == 401
 
-
-# ---------------------------------------------------------------------------
-# Refresh
-# ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_refresh_rotates_token(client: AsyncClient):
@@ -102,29 +85,21 @@ async def test_refresh_replay_revokes_family(client: AsyncClient):
     await client.post("/api/auth/register", json=REG_PAYLOAD)
     original_refresh = client.cookies.get("refresh_token")
 
-    # consume the token
     await client.post("/api/auth/refresh")
 
-    # replay the original token
     client.cookies.set("refresh_token", original_refresh)
     r = await client.post("/api/auth/refresh")
     assert r.status_code == 401
 
-    # subsequent refresh with newest token must also fail (family revoked)
     r2 = await client.post("/api/auth/refresh")
     assert r2.status_code == 401
 
-
-# ---------------------------------------------------------------------------
-# Logout
-# ---------------------------------------------------------------------------
 
 @pytest.mark.asyncio
 async def test_logout_clears_cookies(client: AsyncClient):
     await client.post("/api/auth/register", json=REG_PAYLOAD)
     r = await client.post("/api/auth/logout")
     assert r.status_code == 204
-    # access_token cookie should be cleared (empty or absent)
     assert client.cookies.get("access_token") in (None, "")
 
 

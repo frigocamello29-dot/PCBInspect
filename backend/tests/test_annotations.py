@@ -31,11 +31,6 @@ async def _create_detection(db: AsyncSession, user_id: uuid.UUID) -> Detection:
     return d
 
 
-# ---------------------------------------------------------------------------
-# GET /api/detections/{id}/annotations
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_get_annotations_requires_auth(client: AsyncClient):
     r = await client.get(f"/api/detections/{uuid.uuid4()}/annotations")
@@ -123,11 +118,6 @@ async def test_get_annotations_with_model_findings(client: AsyncClient, db_sessi
     assert body["model_findings"][0]["bbox"] == {"x1": 10, "y1": 20, "x2": 50, "y2": 60}
 
 
-# ---------------------------------------------------------------------------
-# POST /api/detections/{id}/annotations
-# ---------------------------------------------------------------------------
-
-
 @pytest.mark.asyncio
 async def test_post_annotations_requires_auth(client: AsyncClient):
     r = await client.post(
@@ -198,7 +188,6 @@ async def test_post_annotations_updates(client: AsyncClient, db_session: AsyncSe
     assert len(body["findings"]) == 1
     assert body["findings"][0]["class_id"] == 6
 
-    # Exactly one correction row in DB
     result = await db_session.execute(
         select(AnnotationCorrection).where(AnnotationCorrection.detection_id == detection.id)
     )
