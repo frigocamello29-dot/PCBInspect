@@ -60,7 +60,6 @@ class PCBDefectDetector:
 
         h, w = image.shape[:2]
 
-        # Preprocess: resize → [0,1] → NCHW float32
         pil = PILImage.fromarray(image).convert("RGB").resize(
             (_INPUT_SIZE, _INPUT_SIZE), PILImage.BILINEAR
         )
@@ -69,7 +68,6 @@ class PCBDefectDetector:
 
         raw = self.session.run(None, {self._input_name: x})[0]  # [1, 10, 8400]
 
-        # Post-process: transpose → [8400, 10]
         preds = raw[0].T
         class_scores = preds[:, 4:]  # [8400, 6]
         class_ids = np.argmax(class_scores, axis=1)
@@ -83,7 +81,6 @@ class PCBDefectDetector:
         if len(preds_f) == 0:
             return []
 
-        # cx, cy, w, h already in 640px coords → scale to original image
         scale_x, scale_y = w / _INPUT_SIZE, h / _INPUT_SIZE
         cx, cy, bw, bh = preds_f[:, 0], preds_f[:, 1], preds_f[:, 2], preds_f[:, 3]
         rx1 = (cx - bw / 2) * scale_x
@@ -94,7 +91,6 @@ class PCBDefectDetector:
         boxes = np.stack([rx1, ry1, rw, rh], axis=1)
         keep = _nms(boxes, confs_f, iou_threshold=0.45)
 
-        # model class order: 0=open, 1=short, 2=mousebite, 3=spur, 4=copper, 5=pin-hole
         _MODEL_TO_DEFECT_ID = {0: 3, 1: 4, 2: 2, 3: 5, 4: 6, 5: 1}
 
         results: list[DetectionResult] = []

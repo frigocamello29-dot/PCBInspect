@@ -9,7 +9,6 @@ from app.database import Base, get_db
 from app.main import app
 from app.ml.detector import MockPCBDefectDetector
 
-# Use an in-memory SQLite database for tests
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 engine = create_async_engine(TEST_DATABASE_URL, echo=False)
@@ -46,7 +45,6 @@ async def client(db_session: AsyncSession):
     mock_arq = AsyncMock()
     mock_arq.enqueue_job = AsyncMock(return_value=mock_job)
 
-    # ASGITransport doesn't run lifespan — set state directly
     app.state.arq_pool = mock_arq
 
     async with AsyncClient(transport=ASGITransport(app=app), base_url="https://test") as ac:

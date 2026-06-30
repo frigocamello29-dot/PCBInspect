@@ -51,7 +51,7 @@ async def register(db: AsyncSession, email: str, password: str, full_name: str) 
         full_name=full_name,
     )
     db.add(user)
-    await db.flush()  # get user.id
+    await db.flush()
     return user
 
 
@@ -97,7 +97,6 @@ async def rotate_refresh_token(db: AsyncSession, raw_token: str) -> tuple[User, 
         raise ValueError("Invalid refresh token")
 
     if rt.is_revoked:
-        # Replay attack: revoke entire family
         await db.execute(
             update(RefreshToken)
             .where(RefreshToken.family_id == rt.family_id)
@@ -109,7 +108,6 @@ async def rotate_refresh_token(db: AsyncSession, raw_token: str) -> tuple[User, 
     if rt.expires_at.replace(tzinfo=timezone.utc) < datetime.now(timezone.utc):
         raise ValueError("Refresh token expired")
 
-    # Revoke old token
     rt.is_revoked = True
     await db.flush()
 

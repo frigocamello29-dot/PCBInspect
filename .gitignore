@@ -29,8 +29,9 @@ backend/uploads/thumbnails/*
 # ML models (large binary)
 ml/models/*.onnx
 ml/models/*.pt
-#ML model export
+# ML model export
 ml/utils/
+
 # Node
 frontend/node_modules/
 frontend/.next/
@@ -40,8 +41,8 @@ frontend/out/
 # Test cache
 .pytest_cache/
 backend/.pytest_cache/
-
-
+.coverage
+htmlcov/
 
 # IDE
 .idea/
@@ -50,3 +51,4 @@ backend/.pytest_cache/
 # OS
 .DS_Store
 Thumbs.db
+*.log
